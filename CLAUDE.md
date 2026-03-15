@@ -1,13 +1,13 @@
-# CLAUDE.md — lagui
+# CLAUDE.md — gandiva
 
 ## What is this?
 
-A PyQt6 desktop GUI for [libaditya](../libaditya), an astrological calculation library. lagui is a thin presentation layer — all computation is done by libaditya. This is a fun/learning project, not production software.
+A PyQt6 desktop GUI for [libaditya](../libaditya), an astrological calculation library. gandiva is a thin presentation layer — all computation is done by libaditya. This is a fun/learning project, not production software.
 
 ## Setup
 
 ```bash
-cd /home/josh/w/astro/soft/lagui
+cd /home/josh/w/astro/soft/gandiva
 uv venv && source .venv/bin/activate
 uv add . --dev
 ```
@@ -17,13 +17,13 @@ libaditya is linked as an editable local dependency (see `pyproject.toml` `[tool
 ## Run
 
 ```bash
-python -m lagui.app
+python -m gandiva.app
 ```
 
 ## Project structure
 
 ```
-lagui/
+gandiva/
   app.py              # QApplication entry point
   main_window.py      # MainWindow — top-level layout, splitter, wiring
   widgets/
@@ -71,8 +71,8 @@ chart.bodygraph()           # Human Design
 
 ## Design principles
 
-- lagui is an **example app** showing how to use libaditya. Keep it separate.
-- All astro computation stays in libaditya. lagui only does presentation.
+- gandiva is an **example app** showing how to use libaditya. Keep it separate.
+- All astro computation stays in libaditya. gandiva only does presentation.
 - Prefer interactive PyQt6 widgets over rendering static SVGs.
 - Keep it simple and fun. No over-engineering.
 
@@ -90,7 +90,7 @@ The skeleton is in place:
 - `widgets/chart_input.py` → form with name, datetime, UTC offset, lat/long/place, zodiac mode, ayanamsa, house system, "Calculate" button. Emits `chart_created` signal with a `Chart` object.
 - `widgets/planet_table.py` → QTableWidget with columns: Planet, Longitude, Sign, Nakshatra, Dignity, Speed. Populated from `chart.rashi().planets()`.
 
-**First thing to do:** `cd ../lagui && uv venv && source .venv/bin/activate && uv add . --dev && python -m lagui.app` — verify the window opens and shows planet data. Fix any import or API issues.
+**First thing to do:** `cd ../gandiva && uv venv && source .venv/bin/activate && uv add . --dev && python -m gandiva.app` — verify the window opens and shows planet data. Fix any import or API issues.
 
 ## Step 2: Polish the planet table
 

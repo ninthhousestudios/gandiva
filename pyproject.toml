@@ -1,5 +1,5 @@
 [project]
-name = "lagui"
+name = "gandiva"
 version = "0.1.0"
 description = "PyQt6 desktop GUI for libaditya"
 requires-python = ">=3.13"
@@ -13,4 +13,4 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.uv.sources]
-libaditya = { path = "../libaditya", editable = true }
+libaditya = { path = "../libaditya" }
