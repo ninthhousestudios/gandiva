@@ -63,7 +63,7 @@ class SouthIndianRenderer(ChartRenderer):
                 continue
             try:
                 ecl = planet.ecliptic_longitude()
-                sign_num = int(ecl / 30) + 1
+                sign_num = int(ecl / 30) % 12 + 1
                 retro = planet.retrograde()
                 dig = planet.dignity()
                 info = "\n".join(filter(None, [
