@@ -15,7 +15,15 @@ from gandiva.glyphs import PLANET_GLYPHS, SIGN_GLYPHS
 from gandiva.glyph_renderer import draw_glyph, clear_cache
 from gandiva.themes import get_theme, DEFAULT_THEME
 
-CENTER_IMAGE = "/home/josh/nhs/images/nhs/logo/prometheus-footer.png"
+CENTER_IMAGE = "/home/josh/nhs/images/logo/prometheus-footer.png"
+
+
+def _fmt_lon(obj) -> str:
+    """Format a planet or cusp longitude per context settings.
+    Signize on → DD:MM:SS within sign; off → full ecliptic longitude float."""
+    if obj.context.signize:
+        return obj.in_sign_longitude()
+    return str(obj.amsha_longitude())
 
 ZODIAC_NAMES = [
     "ARIES", "TAURUS", "GEMINI", "CANCER",
@@ -255,11 +263,6 @@ class ChartWheelWidget(QWidget):
         band_w     = r_sign - r_planet
         r_mid      = (r_sign + r_planet) / 2
 
-        # Fixed glyph size — NEVER shrink to resolve overlap
-        glyph_size = band_w * 0.55
-        half       = glyph_size / 2
-        min_dist   = glyph_size * 0.95  # minimum pixel distance between centers
-
         skip_outer = not self.chart.context.print_outer_planets
 
         raw = []
@@ -272,13 +275,23 @@ class ChartWheelWidget(QWidget):
                 ecl   = planet.ecliptic_longitude()
                 retro = planet.retrograde()
                 dig   = planet.dignity()
+                try:
+                    rise_str = f"Rise:       {planet.rise().usrtimedate()}"
+                except Exception:
+                    rise_str = ""
+                try:
+                    set_str = f"Set:        {planet.set().usrtimedate()}"
+                except Exception:
+                    set_str = ""
                 info  = "\n".join(filter(None, [
                     f"{name}" + ("  (R)" if retro else ""),
-                    f"Longitude:  {planet.in_sign_longitude()}",
+                    f"Longitude:  {_fmt_lon(planet)}",
                     f"Sign:       {planet.sign_name()}",
                     f"Nakshatra:  {planet.nakshatra_name()}",
                     f"Dignity:    {dig}" if dig else "",
                     f"Speed:      {planet.longitude_speed():.4f}°/day",
+                    rise_str,
+                    set_str,
                 ]))
                 raw.append((name, ecl, retro, info))
             except Exception:
@@ -288,31 +301,43 @@ class ChartWheelWidget(QWidget):
             self.planet_positions = []
             return
 
+        glyph_size = band_w * 0.55
+        half       = glyph_size / 2
+        min_dist   = glyph_size * 0.95
+
         # ── initial placement: true ecliptic longitude at r_mid ────────────────
-        # Each entry: [x, y, name, retro, info, sign_idx]
+        # Each entry: [x, y, name, retro, info, sign_idx, ecl_true]
+        # Tiny deterministic per-planet offset prevents exact co-location so the
+        # collision loop always has a well-defined push direction.
         items = []
-        for name, ecl, retro, info in raw:
+        for idx, (name, ecl, retro, info) in enumerate(raw):
             x, y = self._polar(cx, cy, r_mid, ecl)
+            x += (idx % 3 - 1) * 0.5
+            y += (idx // 3 % 3 - 1) * 0.5
             sign_idx = int(ecl / 30)
-            items.append([x, y, name, retro, info, sign_idx])
+            items.append([x, y, name, retro, info, sign_idx, ecl])
 
         # ── force-directed collision resolution in screen pixel space ──────────
-        # Push overlapping glyphs apart without changing their size.
-        # After each iteration: clamp radially (stay in band) and angularly
-        # (stay in the planet's own sign sector).
+        # Push overlapping glyphs apart; clamp radially (stay in band) and
+        # angularly (stay in the planet's own sign sector).
         r_min = r_planet + half + 4
         r_max = r_sign   - half - 4
 
-        for iteration in range(120):
+        for iteration in range(200):
             moved = False
             for i in range(len(items)):
                 for j in range(i + 1, len(items)):
                     dx = items[j][0] - items[i][0]
                     dy = items[j][1] - items[i][1]
                     dist = math.sqrt(dx * dx + dy * dy)
-                    if dist < min_dist and dist > 0.01:
+                    if dist < min_dist:
+                        if dist < 0.01:
+                            # Exactly co-located: push along index-derived axis
+                            angle = (i - j) * math.pi / max(len(items), 1)
+                            nx, ny = math.cos(angle), math.sin(angle)
+                        else:
+                            nx, ny = dx / dist, dy / dist
                         push = (min_dist - dist) / 2 + 0.3
-                        nx, ny = dx / dist, dy / dist
                         items[i][0] -= nx * push
                         items[i][1] -= ny * push
                         items[j][0] += nx * push
@@ -327,19 +352,26 @@ class ChartWheelWidget(QWidget):
                 if r < 1:
                     continue
 
-                # Radial spring toward r_mid + hard clamp
-                target_r = r + (r_mid - r) * 0.1
+                # Weak radial spring — keeps glyphs roughly centred in the band
+                # without fighting the collision forces that spread them radially.
+                target_r = r + (r_mid - r) * 0.02
                 clamped_r = max(r_min, min(r_max, target_r))
 
-                # Current screen angle → ecliptic, then clamp to sign bounds
+                # Angular: soft spring toward true ecliptic position so isolated
+                # planets snap back precisely, plus a ±15° hard outer limit so
+                # no planet can drift more than half a sign from its true pos.
                 screen_angle = math.degrees(math.atan2(-(item[1] - cy), item[0] - cx)) % 360
-                ecl_deg = self._angle_to_ecl(screen_angle)
-                sign_idx = item[5]
-                sign_lo = sign_idx * 30.0
-                sign_hi = sign_lo + 30.0
-                # Angular margin so glyphs don't sit right on the boundary
-                margin = math.degrees(half / clamped_r)
-                ecl_clamped = max(sign_lo + margin, min(sign_hi - margin, ecl_deg))
+                ecl_deg  = self._angle_to_ecl(screen_angle)
+                ecl_true = item[6]
+                drift = ecl_deg - ecl_true
+                if drift >  180: drift -= 360
+                if drift < -180: drift += 360
+                ecl_spring  = ecl_deg - drift * 0.008
+                sign_idx_i  = item[5]
+                sign_lo     = sign_idx_i * 30.0
+                sign_hi     = sign_lo + 30.0
+                margin_deg  = half / (2 * math.pi * ((r_min + r_max) / 2)) * 360
+                ecl_clamped = max(sign_lo + margin_deg, min(sign_hi - margin_deg, ecl_spring))
 
                 # Convert back to screen position
                 a = self._ecl_to_angle(ecl_clamped)
@@ -351,7 +383,7 @@ class ChartWheelWidget(QWidget):
 
         # ── draw glyphs ───────────────────────────────────────────────────────
         self.planet_positions = []
-        for x, y, name, retro, info, _sign in items:
+        for x, y, name, retro, info, _sign, _ecl in items:
             color  = self.theme["glyph_selected"] if name == self.selected_planet \
                      else self.theme["glyph_retro"] if retro \
                      else self.theme["glyph"]
@@ -407,7 +439,7 @@ class ChartWheelWidget(QWidget):
             try:
                 tip = "\n".join([
                     f"Cusp {ROMAN[i-1]}  (House {i})",
-                    f"Longitude:  {cusp.in_sign_longitude()}",
+                    f"Longitude:  {_fmt_lon(cusp)}",
                     f"Sign:       {cusp.sign_name()}",
                     f"Nakshatra:  {cusp.nakshatra_name()}",
                 ])

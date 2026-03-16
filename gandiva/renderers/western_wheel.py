@@ -18,7 +18,7 @@ from gandiva.glyph_renderer import draw_glyph, clear_cache
 from gandiva.themes import get_theme, DEFAULT_THEME
 from gandiva.renderers.base import ChartRenderer
 
-CENTER_IMAGE = "/home/josh/nhs/images/nhs/logo/prometheus-footer.png"
+CENTER_IMAGE = "/home/josh/nhs/images/logo/prometheus-footer.png"
 
 
 def _fmt_lon(obj) -> str:
@@ -458,17 +458,22 @@ class WesternWheelRenderer(ChartRenderer):
         self.update()
         super().mousePressEvent(event)
 
+    def _tooltip_widget(self):
+        """Get the view widget for tooltip anchoring (keeps tooltip visible while hovering)."""
+        views = self.scene().views() if self.scene() else []
+        return views[0].viewport() if views else None
+
     def hoverMoveEvent(self, event: QGraphicsSceneHoverEvent):
         planet_hit = self._planet_at(event.pos())
         cusp_tip   = self._cusp_at(event.pos())
         gpos       = event.screenPos()
+        vp         = self._tooltip_widget()
         if planet_hit:
             self.setCursor(Qt.CursorShape.PointingHandCursor)
-            # NOTE: no `self` arg — QGraphicsObject is not a QWidget
-            QToolTip.showText(gpos, planet_hit[1])
+            QToolTip.showText(gpos, planet_hit[1], vp)
         elif cusp_tip:
             self.setCursor(Qt.CursorShape.PointingHandCursor)
-            QToolTip.showText(gpos, cusp_tip)
+            QToolTip.showText(gpos, cusp_tip, vp)
         else:
             self.setCursor(Qt.CursorShape.ArrowCursor)
             QToolTip.hideText()
