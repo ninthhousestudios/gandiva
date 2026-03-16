@@ -5,3 +5,7 @@ multiple times with different configuration.
 """
 
 INFO_WIDGETS: dict[str, tuple] = {}
+
+from gandiva.info_widgets.panchanga import PanchangaWidget  # noqa: E402
+
+INFO_WIDGETS["Panchanga"] = (PanchangaWidget, {})
