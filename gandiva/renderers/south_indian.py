@@ -158,7 +158,7 @@ class SouthIndianRenderer(ChartRenderer):
             # Draw sign label at top-left of cell
             text_rect = QRectF(rect.x() + 3, rect.y() + 2,
                                rect.width() - 6, label_font.pointSize() * 1.8)
-            p.drawText(text_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, label)
+            p.drawText(text_rect, int(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop), label)
 
     def _draw_ascendant_mark(self, p, x0, y0, cw, ch):
         """Draw a diagonal line in the ascendant sign's cell."""
@@ -213,7 +213,7 @@ class SouthIndianRenderer(ChartRenderer):
                     p.setFont(QFont("Sans", max(5, int(glyph_size * 0.5))))
                     p.drawText(QRectF(px - glyph_size/2, py - glyph_size/2,
                                       glyph_size, glyph_size),
-                               Qt.AlignmentFlag.AlignCenter, pname[:2])
+                               int(Qt.AlignmentFlag.AlignCenter), pname[:2])
 
                 self._planet_positions.append((pname, px, py, info))
 
@@ -242,7 +242,7 @@ class SouthIndianRenderer(ChartRenderer):
             except Exception:
                 pass
             try:
-                lines.append(ctx.location.placename)
+                lines.append(ctx.location.placename())
             except Exception:
                 pass
 
@@ -253,7 +253,7 @@ class SouthIndianRenderer(ChartRenderer):
             for i, line in enumerate(lines):
                 text_rect = QRectF(center_rect.x() + 8, start_y + i * line_h,
                                    center_rect.width() - 16, line_h)
-                p.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, line)
+                p.drawText(text_rect, int(Qt.AlignmentFlag.AlignCenter), line)
 
     # ── mouse interaction ─────────────────────────────────────────────────────
 
