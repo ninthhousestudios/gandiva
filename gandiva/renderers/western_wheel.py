@@ -60,8 +60,7 @@ class WesternWheelRenderer(ChartRenderer):
         self.selected_planet  = None
         self._center_pixmap   = QPixmap(CENTER_IMAGE)
         self.cusp_positions   = []
-        # NOTE: self._chart and self._theme are inherited from ChartRenderer
-        # NOTE: info_label (top-left overlay) is NOT migrated — will become a separate widget
+        self._active_tip      = ""   # track current tooltip to avoid resetting on every hover move
 
     def set_theme(self, theme: dict) -> None:
         super().set_theme(theme)
@@ -458,23 +457,26 @@ class WesternWheelRenderer(ChartRenderer):
         self.update()
         super().mousePressEvent(event)
 
-    def _tooltip_widget(self):
-        """Get the view widget for tooltip anchoring (keeps tooltip visible while hovering)."""
-        views = self.scene().views() if self.scene() else []
-        return views[0].viewport() if views else None
-
     def hoverMoveEvent(self, event: QGraphicsSceneHoverEvent):
         planet_hit = self._planet_at(event.pos())
         cusp_tip   = self._cusp_at(event.pos())
-        gpos       = event.screenPos()
-        vp         = self._tooltip_widget()
         if planet_hit:
             self.setCursor(Qt.CursorShape.PointingHandCursor)
-            QToolTip.showText(gpos, planet_hit[1], vp, vp.rect() if vp else QRectF().toRect(), 60000)
+            self.setToolTip(planet_hit[1])
+            if planet_hit[1] != self._active_tip:
+                self._active_tip = planet_hit[1]
+                # Force immediate show via QToolTip.showText, then setToolTip keeps it alive
+                QToolTip.showText(event.screenPos(), planet_hit[1])
         elif cusp_tip:
             self.setCursor(Qt.CursorShape.PointingHandCursor)
-            QToolTip.showText(gpos, cusp_tip, vp, vp.rect() if vp else QRectF().toRect(), 60000)
+            self.setToolTip(cusp_tip)
+            if cusp_tip != self._active_tip:
+                self._active_tip = cusp_tip
+                QToolTip.showText(event.screenPos(), cusp_tip)
         else:
             self.setCursor(Qt.CursorShape.ArrowCursor)
-            QToolTip.hideText()
+            self.setToolTip("")
+            if self._active_tip:
+                self._active_tip = ""
+                QToolTip.hideText()
         super().hoverMoveEvent(event)
