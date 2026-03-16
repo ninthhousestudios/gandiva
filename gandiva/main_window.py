@@ -5,6 +5,7 @@ from PyQt6.QtCore import Qt, QSettings
 from PyQt6.QtGui import QShortcut, QKeySequence
 
 from gandiva.widgets.chart_input import ChartInputPanel
+from gandiva.widgets.left_panel import LeftPanel
 from gandiva.scene.chart_scene import ChartScene
 from gandiva.scene.chart_view import ChartView
 from gandiva.themes import get_theme, DEFAULT_THEME, make_app_stylesheet
@@ -52,23 +53,35 @@ class MainWindow(QMainWindow):
         self.chart_view = ChartView(self.chart_scene)
         self.chart_scene.set_chart_style("Western Wheel")
 
-        # ── splitter: chart wheel + collapsible content panel ────────────────
+        # ── left panel: overlay/widget toggles ─────────────────────────────
+        self.left_panel = LeftPanel()
+
+        # ── splitter: left panel + chart view + input panel ────────────────
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.splitter.addWidget(self.left_panel)
         self.splitter.addWidget(self.chart_view)
         self.splitter.addWidget(self.input_panel)
-        self.splitter.setStretchFactor(0, 1)
-        self.splitter.setStretchFactor(1, 0)
+        self.splitter.setStretchFactor(0, 0)
+        self.splitter.setStretchFactor(1, 1)
+        self.splitter.setStretchFactor(2, 0)
         self.input_panel.splitter = self.splitter
+        self.left_panel.splitter = self.splitter
 
-        # ── sidebar tab bar lives outside the splitter so it's always visible ─
-        # When the content panel collapses to 0, the chart fills the splitter
-        # and only this thin strip remains on the right edge.
+        # ── left panel signal wiring ────────────────────────────────────────
+        self.left_panel.overlay_toggled.connect(self._on_overlay_toggled)
+        self.left_panel.widget_toggled.connect(self._on_widget_toggled)
+        self.chart_scene.overlay_removed.connect(self.left_panel.on_overlay_removed)
+        self.chart_scene.widget_removed.connect(self.left_panel.on_widget_removed)
+
+        # ── tab bars live outside the splitter so they're always visible ────
         splitter = self.splitter
+        left_tab_bar    = self.left_panel.tab_bar
         sidebar_tab_bar = self.input_panel.tab_bar
         content_row = QWidget()
         cr_layout   = QHBoxLayout(content_row)
         cr_layout.setContentsMargins(0, 0, 0, 0)
         cr_layout.setSpacing(0)
+        cr_layout.addWidget(left_tab_bar)
         cr_layout.addWidget(splitter, stretch=1)
         cr_layout.addWidget(sidebar_tab_bar)
 
@@ -93,7 +106,8 @@ class MainWindow(QMainWindow):
 
         # ── set initial splitter sizes after layout is ready ─────────────────
         from gandiva.widgets.chart_input import EXPANDED_WIDTH
-        self.splitter.setSizes([self.width() - EXPANDED_WIDTH, EXPANDED_WIDTH])
+        from gandiva.widgets.left_panel import PANEL_WIDTH
+        self.splitter.setSizes([PANEL_WIDTH, self.width() - EXPANDED_WIDTH - PANEL_WIDTH, EXPANDED_WIDTH])
 
     # ── chart display ─────────────────────────────────────────────────────────
 
@@ -161,6 +175,19 @@ class MainWindow(QMainWindow):
 
     def _on_chart_style_changed(self, style_name: str):
         self.chart_scene.set_chart_style(style_name)
+        self.left_panel.uncheck_all_overlays()
+
+    def _on_overlay_toggled(self, overlay_id: str, checked: bool):
+        if checked:
+            self.chart_scene.add_overlay(overlay_id)
+        else:
+            self.chart_scene.remove_overlay(overlay_id)
+
+    def _on_widget_toggled(self, widget_id: str, checked: bool):
+        if checked:
+            self.chart_scene.add_info_widget(widget_id)
+        else:
+            self.chart_scene.remove_info_widget(widget_id)
 
     def _on_theme_changed(self, name: str):
         self._apply_theme(name)

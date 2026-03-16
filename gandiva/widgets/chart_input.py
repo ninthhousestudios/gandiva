@@ -107,7 +107,11 @@ class ChartInputPanel(QWidget):
         self.setFixedWidth(w)
         if hasattr(self, 'splitter') and self.splitter:
             total = self.splitter.width()
-            self.splitter.setSizes([total - w, w])
+            sizes = self.splitter.sizes()
+            if len(sizes) >= 3:
+                self.splitter.setSizes([sizes[0], total - sizes[0] - w, w])
+            else:
+                self.splitter.setSizes([total - w, w])
 
     panel_width = pyqtProperty(int, _get_panel_width, _set_panel_width)
 
