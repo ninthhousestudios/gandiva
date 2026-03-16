@@ -35,6 +35,7 @@ class MainWindow(QMainWindow):
         self.input_panel.chart_created.connect(self.on_chart_created)
         self.input_panel.theme_changed.connect(self._on_theme_changed)
         self.input_panel.no_changes.connect(self._on_no_changes)
+        self.input_panel.chart_style_changed.connect(self._on_chart_style_changed)
 
         QShortcut(QKeySequence("Ctrl+="), self).activated.connect(
             lambda: self.input_panel.adjust_font(+1)
@@ -157,6 +158,9 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("No changes to calculate", 3000)
 
     # ── theme ─────────────────────────────────────────────────────────────────
+
+    def _on_chart_style_changed(self, style_name: str):
+        self.chart_scene.set_chart_style(style_name)
 
     def _on_theme_changed(self, name: str):
         self._apply_theme(name)

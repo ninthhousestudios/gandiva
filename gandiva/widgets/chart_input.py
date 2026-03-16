@@ -59,6 +59,14 @@ _NAKSHATRA_ORDER = [
 ]
 
 
+def _fmt_lon(obj) -> str:
+    """Format a planet or cusp longitude per context settings.
+    Signize on → DD:MM:SS within sign; off → full ecliptic longitude float."""
+    if obj.context.signize:
+        return obj.in_sign_longitude()
+    return str(obj.amsha_longitude())
+
+
 def _make_style(pt: int) -> str:
     h = pt + 8   # compact input-widget height sized to comfortably hold pt-px text
     return f"""
@@ -85,9 +93,10 @@ def _make_style(pt: int) -> str:
 
 
 class ChartInputPanel(QWidget):
-    chart_created  = pyqtSignal(object)
-    theme_changed  = pyqtSignal(str)
-    no_changes     = pyqtSignal()          # emitted when Calculate pressed with no changes
+    chart_created       = pyqtSignal(object)
+    theme_changed       = pyqtSignal(str)
+    no_changes          = pyqtSignal()          # emitted when Calculate pressed with no changes
+    chart_style_changed = pyqtSignal(str)
 
     # ── animatable width property ─────────────────────────────────────────────
 
@@ -126,6 +135,12 @@ class ChartInputPanel(QWidget):
         self.tab_bar.addTab("Planets")      # 4
         self.tab_bar.addTab("Cusps")        # 5
         self.tab_bar.addTab("Nakshatras")   # 6
+        self.tab_bar.setTabToolTip(0, "Chart Info")
+        self.tab_bar.setTabToolTip(1, "Calc Options")
+        self.tab_bar.setTabToolTip(2, "Display")
+        self.tab_bar.setTabToolTip(4, "Planets")
+        self.tab_bar.setTabToolTip(5, "Cusps")
+        self.tab_bar.setTabToolTip(6, "Nakshatras")
         self.tab_bar.tabBarClicked.connect(self._on_tab_clicked)
 
         # ── content stack (collapsible, fills this widget) ────────────────────
@@ -309,6 +324,20 @@ class ChartInputPanel(QWidget):
         disp_layout.setContentsMargins(6, 4, 6, 4)
         disp_layout.setSpacing(6)
 
+        # Chart Style
+        style_group = QGroupBox("Chart Style")
+        style_form  = QFormLayout(style_group)
+        style_form.setVerticalSpacing(3)
+        style_form.setHorizontalSpacing(6)
+
+        from gandiva.renderers import CHART_STYLES
+        self.chart_style_combo = QComboBox()
+        self.chart_style_combo.addItems(list(CHART_STYLES.keys()))
+        self.chart_style_combo.currentTextChanged.connect(self.chart_style_changed)
+        style_form.addRow("Style:", self.chart_style_combo)
+
+        disp_layout.addWidget(style_group)
+
         # Display
         disp_group = QGroupBox("Display")
         disp_form  = QFormLayout(disp_group)
@@ -317,15 +346,18 @@ class ChartInputPanel(QWidget):
 
         self.signize_check = QCheckBox()
         self.signize_check.setChecked(True)
+        self.signize_check.stateChanged.connect(self.calculate)
         disp_form.addRow("Signize:", self.signize_check)
 
         self.toround_check = QCheckBox()
         self.toround_check.setChecked(True)
+        self.toround_check.stateChanged.connect(self.calculate)
         disp_form.addRow("Round:", self.toround_check)
 
         self.toround_places_spin = QSpinBox()
         self.toround_places_spin.setRange(0, 9)
         self.toround_places_spin.setValue(3)
+        self.toround_places_spin.valueChanged.connect(self.calculate)
         disp_form.addRow("Decimal Places:", self.toround_places_spin)
 
         disp_layout.addWidget(disp_group)
@@ -338,10 +370,12 @@ class ChartInputPanel(QWidget):
 
         self.print_nakshatras_check = QCheckBox()
         self.print_nakshatras_check.setChecked(True)
+        self.print_nakshatras_check.stateChanged.connect(self.calculate)
         print_form.addRow("Nakshatras:", self.print_nakshatras_check)
 
         self.print_outer_planets_check = QCheckBox()
         self.print_outer_planets_check.setChecked(True)
+        self.print_outer_planets_check.stateChanged.connect(self.calculate)
         print_form.addRow("Outer Planets:", self.print_outer_planets_check)
 
         disp_layout.addWidget(print_group)
@@ -354,6 +388,7 @@ class ChartInputPanel(QWidget):
 
         self.hd_print_hexagrams_check = QCheckBox()
         self.hd_print_hexagrams_check.setChecked(False)
+        self.hd_print_hexagrams_check.stateChanged.connect(self.calculate)
         hd_disp_form.addRow("Print Hexagrams:", self.hd_print_hexagrams_check)
 
         disp_layout.addWidget(hd_disp_group)
@@ -599,7 +634,7 @@ class ChartInputPanel(QWidget):
 
                 # ── Basic ──────────────────────────────────────────────────
                 basic = bold_item(tree, ["Basic", ""])
-                QTreeWidgetItem(basic, ["Longitude",  planet.in_sign_longitude()])
+                QTreeWidgetItem(basic, ["Longitude",  _fmt_lon(planet)])
                 QTreeWidgetItem(basic, ["Sign",       planet.sign_name()])
                 dig = planet.dignity()
                 if dig:
@@ -618,6 +653,14 @@ class ChartInputPanel(QWidget):
                     pass
                 try:
                     QTreeWidgetItem(basic, ["Distance", f"{planet.distance():.4f} AU"])
+                except Exception:
+                    pass
+                try:
+                    QTreeWidgetItem(basic, ["Rise", planet.rise().usrtimedate()])
+                except Exception:
+                    pass
+                try:
+                    QTreeWidgetItem(basic, ["Set", planet.set().usrtimedate()])
                 except Exception:
                     pass
 
@@ -667,7 +710,7 @@ class ChartInputPanel(QWidget):
                 dig   = planet.dignity()
                 dig_s = f" [{dig}]" if dig else ""
                 groups.setdefault(nak, []).append(
-                    (f"{pname}{retro}{dig_s}", planet.in_sign_longitude(), "planet", pname))
+                    (f"{pname}{retro}{dig_s}", _fmt_lon(planet), "planet", pname))
             except Exception:
                 continue
 
@@ -676,12 +719,8 @@ class ChartInputPanel(QWidget):
             for cusp in rashi.cusps():
                 try:
                     nak = cusp.nakshatra_name()
-                    try:
-                        lon = cusp.in_sign_longitude()
-                    except Exception:
-                        lon = cusp.longitude()
                     groups.setdefault(nak, []).append(
-                        (f"Cusp {cusp.number()}", str(lon), "cusp", cusp.number()))
+                        (f"Cusp {cusp.number()}", _fmt_lon(cusp), "cusp", cusp.number()))
                 except Exception:
                     continue
         except Exception:
@@ -705,13 +744,9 @@ class ChartInputPanel(QWidget):
         rows  = []
         for cusp in cusps:
             try:
-                try:
-                    lon = cusp.in_sign_longitude()
-                except Exception:
-                    lon = cusp.longitude()
                 rows.append([
                     str(cusp.number()),
-                    str(lon),
+                    _fmt_lon(cusp),
                     str(cusp.sign_name()),
                     str(cusp.nakshatra_name()),
                 ])
