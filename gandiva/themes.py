@@ -43,6 +43,8 @@ COSMIC = {
     "sign_label":      _c(180, 140, 255),    # lavender
     "cusp_label":      _c(100, 200, 255),    # light cyan
     "house_label":     _c(80, 220, 180),     # mint
+    "aspect_hard":     _c(255, 80, 80),     # red for squares/oppositions
+    "aspect_soft":     _c(80, 200, 255),     # cyan-blue for trines/sextiles
 
     # UI chrome (for input panel, tables, etc.)
     "ui_bg":           _c(18, 14, 38),
@@ -79,6 +81,8 @@ FOREST = {
     "sign_label":      _c(180, 170, 130),    # parchment
     "cusp_label":      _c(140, 160, 110),    # sage
     "house_label":     _c(160, 150, 110),    # khaki
+    "aspect_hard":     _c(200, 80, 50),      # rust red
+    "aspect_soft":     _c(100, 160, 100),     # muted green
 
     "ui_bg":           _c(25, 35, 28),
     "ui_text":         _c(200, 195, 170),
@@ -113,6 +117,8 @@ LIGHT = {
     "sign_label":      _c(60, 60, 60),
     "cusp_label":      _c(40, 40, 130),
     "house_label":     _c(20, 20, 20),
+    "aspect_hard":     _c(200, 50, 50),      # red
+    "aspect_soft":     _c(50, 120, 200),      # blue
 
     "ui_bg":           _c(245, 245, 245),
     "ui_text":         _c(20, 20, 20),
