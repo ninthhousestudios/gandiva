@@ -5,7 +5,8 @@ from PyQt6.QtCore import Qt, QSettings
 from PyQt6.QtGui import QShortcut, QKeySequence
 
 from gandiva.widgets.chart_input import ChartInputPanel
-from gandiva.widgets.chart_wheel import ChartWheelWidget
+from gandiva.scene.chart_scene import ChartScene
+from gandiva.scene.chart_view import ChartView
 from gandiva.themes import get_theme, DEFAULT_THEME, make_app_stylesheet
 
 
@@ -45,12 +46,14 @@ class MainWindow(QMainWindow):
             lambda: self.input_panel.adjust_font(0)
         )
 
-        # ── center: chart wheel ───────────────────────────────────────────────
-        self.chart_wheel = ChartWheelWidget()
+        # ── center: chart scene + view ───────────────────────────────────────
+        self.chart_scene = ChartScene()
+        self.chart_view = ChartView(self.chart_scene)
+        self.chart_scene.set_chart_style("Western Wheel")
 
         # ── splitter: chart wheel + collapsible content panel ────────────────
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
-        self.splitter.addWidget(self.chart_wheel)
+        self.splitter.addWidget(self.chart_view)
         self.splitter.addWidget(self.input_panel)
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 0)
@@ -94,7 +97,7 @@ class MainWindow(QMainWindow):
     # ── chart display ─────────────────────────────────────────────────────────
 
     def _display_chart(self, chart):
-        self.chart_wheel.update_from_chart(chart)
+        self.chart_scene.set_chart(chart)
         self.input_panel.update_info(chart)
 
     # ── called by ChartInputPanel when Calculate is pressed ───────────────────
@@ -162,4 +165,4 @@ class MainWindow(QMainWindow):
         QSettings("gandiva", "gandiva").setValue("theme", name)
         theme = get_theme(name)
         QApplication.instance().setStyleSheet(make_app_stylesheet(theme))
-        self.chart_wheel.set_theme(name)
+        self.chart_scene.set_theme(name)
