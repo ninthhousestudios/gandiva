@@ -470,10 +470,10 @@ class WesternWheelRenderer(ChartRenderer):
         vp         = self._tooltip_widget()
         if planet_hit:
             self.setCursor(Qt.CursorShape.PointingHandCursor)
-            QToolTip.showText(gpos, planet_hit[1], vp)
+            QToolTip.showText(gpos, planet_hit[1], vp, vp.rect() if vp else QRectF().toRect(), 60000)
         elif cusp_tip:
             self.setCursor(Qt.CursorShape.PointingHandCursor)
-            QToolTip.showText(gpos, cusp_tip, vp)
+            QToolTip.showText(gpos, cusp_tip, vp, vp.rect() if vp else QRectF().toRect(), 60000)
         else:
             self.setCursor(Qt.CursorShape.ArrowCursor)
             QToolTip.hideText()
