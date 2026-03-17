@@ -1,0 +1,94 @@
+<h2>QGraphicsScene Architecture</h2>
+<p class="subtitle">How the layers stack in the scene graph</p>
+
+<div class="mockup">
+  <div class="mockup-header">Scene Layer Stack (bottom → top)</div>
+  <div class="mockup-body" style="padding: 2rem; font-family: monospace;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+
+      <!-- Z=100: Info widgets -->
+      <div style="background: rgba(100, 200, 255, 0.15); border: 2px solid rgba(100, 200, 255, 0.6); border-radius: 8px; padding: 16px; position: relative;">
+        <span style="position: absolute; right: 12px; top: 8px; font-size: 0.75rem; opacity: 0.5;">z = 100+</span>
+        <div style="font-weight: bold; color: #64c8ff; margin-bottom: 8px;">Info Widgets (QGraphicsProxyWidget)</div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <div style="background: rgba(100, 200, 255, 0.1); border: 1px solid rgba(100, 200, 255, 0.3); border-radius: 6px; padding: 12px; width: 140px;">
+            <div style="font-size: 0.8rem; opacity: 0.7;">Mini D9 Navamsha</div>
+            <div style="font-size: 0.65rem; opacity: 0.4; margin-top: 4px;">Draggable, resizable<br>Closeable (X on hover)<br>Can go UNDER chart</div>
+          </div>
+          <div style="background: rgba(100, 200, 255, 0.1); border: 1px solid rgba(100, 200, 255, 0.3); border-radius: 6px; padding: 12px; width: 140px;">
+            <div style="font-size: 0.8rem; opacity: 0.7;">Panchanga</div>
+            <div style="font-size: 0.65rem; opacity: 0.4; margin-top: 4px;">Same behavior<br>z-order adjustable<br>per widget</div>
+          </div>
+          <div style="background: rgba(100, 200, 255, 0.1); border: 1px solid rgba(100, 200, 255, 0.3); border-radius: 6px; padding: 12px; width: 140px;">
+            <div style="font-size: 0.8rem; opacity: 0.7;">Dasha Periods</div>
+            <div style="font-size: 0.65rem; opacity: 0.4; margin-top: 4px;">Click to raise<br>Drag anywhere<br>Partially hide OK</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; opacity: 0.3; font-size: 0.8rem;">▲ user can drag widgets above or below chart ▼</div>
+
+      <!-- Z=50: Overlays -->
+      <div style="background: rgba(255, 180, 50, 0.15); border: 2px solid rgba(255, 180, 50, 0.6); border-radius: 8px; padding: 16px; position: relative;">
+        <span style="position: absolute; right: 12px; top: 8px; font-size: 0.75rem; opacity: 0.5;">z = 50</span>
+        <div style="font-weight: bold; color: #ffb432; margin-bottom: 8px;">Overlays (QGraphicsItem)</div>
+        <div style="font-size: 0.85rem; opacity: 0.7;">Semi-transparent, painted over the chart</div>
+        <div style="display: flex; gap: 12px; margin-top: 8px;">
+          <div style="background: rgba(255, 180, 50, 0.1); border: 1px dashed rgba(255, 180, 50, 0.3); border-radius: 4px; padding: 8px; font-size: 0.75rem;">Aspect Lines (Western)</div>
+          <div style="background: rgba(255, 180, 50, 0.1); border: 1px dashed rgba(255, 180, 50, 0.3); border-radius: 4px; padding: 8px; font-size: 0.75rem;">Rashi Aspects (South Indian)</div>
+          <div style="background: rgba(255, 180, 50, 0.1); border: 1px dashed rgba(255, 180, 50, 0.3); border-radius: 4px; padding: 8px; font-size: 0.75rem;">Nakshatra Grid</div>
+        </div>
+      </div>
+
+      <!-- Z=10: Chart -->
+      <div style="background: rgba(120, 255, 120, 0.15); border: 2px solid rgba(120, 255, 120, 0.6); border-radius: 8px; padding: 16px; position: relative;">
+        <span style="position: absolute; right: 12px; top: 8px; font-size: 0.75rem; opacity: 0.5;">z = 10</span>
+        <div style="font-weight: bold; color: #78ff78; margin-bottom: 8px;">Chart Renderer (QGraphicsItem)</div>
+        <div style="font-size: 0.85rem; opacity: 0.7;">One renderer active at a time, selected via Display tab dropdown</div>
+        <div style="display: flex; gap: 12px; margin-top: 8px;">
+          <div style="background: rgba(120, 255, 120, 0.2); border: 1px solid rgba(120, 255, 120, 0.4); border-radius: 4px; padding: 8px; font-size: 0.75rem; font-weight: bold;">Western Wheel ✓</div>
+          <div style="background: rgba(120, 255, 120, 0.05); border: 1px dashed rgba(120, 255, 120, 0.2); border-radius: 4px; padding: 8px; font-size: 0.75rem; opacity: 0.5;">South Indian Grid</div>
+          <div style="background: rgba(120, 255, 120, 0.05); border: 1px dashed rgba(120, 255, 120, 0.2); border-radius: 4px; padding: 8px; font-size: 0.75rem; opacity: 0.5;">North Indian Diamond</div>
+        </div>
+      </div>
+
+      <!-- Z=0: Background -->
+      <div style="background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 16px; position: relative;">
+        <span style="position: absolute; right: 12px; top: 8px; font-size: 0.75rem; opacity: 0.5;">z = 0</span>
+        <div style="font-weight: bold; opacity: 0.6; margin-bottom: 8px;">Background (QGraphicsRectItem)</div>
+        <div style="font-size: 0.85rem; opacity: 0.4;">Theme-colored fill, always behind everything</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 2rem;">
+  <h3>What QGraphicsScene gives you for free</h3>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+    <div style="background: rgba(255,255,255,0.05); border-radius: 6px; padding: 12px;">
+      <div style="font-weight: bold; margin-bottom: 4px;">Dragging</div>
+      <div style="font-size: 0.85rem; opacity: 0.7;">setFlag(ItemIsMovable) — done</div>
+    </div>
+    <div style="background: rgba(255,255,255,0.05); border-radius: 6px; padding: 12px;">
+      <div style="font-weight: bold; margin-bottom: 4px;">Z-ordering</div>
+      <div style="font-size: 0.85rem; opacity: 0.7;">setZValue() — widgets under/over chart</div>
+    </div>
+    <div style="background: rgba(255,255,255,0.05); border-radius: 6px; padding: 12px;">
+      <div style="font-weight: bold; margin-bottom: 4px;">Hit testing</div>
+      <div style="font-size: 0.85rem; opacity: 0.7;">itemAt(), collidingItems() — built in</div>
+    </div>
+    <div style="background: rgba(255,255,255,0.05); border-radius: 6px; padding: 12px;">
+      <div style="font-weight: bold; margin-bottom: 4px;">Transforms</div>
+      <div style="font-size: 0.85rem; opacity: 0.7;">Scale, rotate, opacity per item</div>
+    </div>
+    <div style="background: rgba(255,255,255,0.05); border-radius: 6px; padding: 12px;">
+      <div style="font-weight: bold; margin-bottom: 4px;">Animations</div>
+      <div style="font-size: 0.85rem; opacity: 0.7;">QPropertyAnimation on pos, scale, opacity</div>
+    </div>
+    <div style="background: rgba(255,255,255,0.05); border-radius: 6px; padding: 12px;">
+      <div style="font-weight: bold; margin-bottom: 4px;">Viewport</div>
+      <div style="font-size: 0.85rem; opacity: 0.7;">Pan, zoom, fitInView — if you ever want it</div>
+    </div>
+  </div>
+</div>

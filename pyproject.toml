@@ -2,6 +2,10 @@
 name = "gandiva"
 version = "0.1.0"
 description = "PyQt6 desktop GUI for libaditya"
+license = "AGPL-3.0-or-later"
+authors = [
+    { name = "Ninth House Studios, LLC", email = "josh@ninthhouse.studio" },
+]
 requires-python = ">=3.13"
 dependencies = [
     "PyQt6>=6.8",

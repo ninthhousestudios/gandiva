@@ -1,0 +1,8 @@
+{"type":"server-started","port":57472,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:57472","screen_dir":"/home/josh/w/astro/soft/gandiva/.superpowers/brainstorm/17732-1773678821"}
+{"type":"screen-added","file":"/home/josh/w/astro/soft/gandiva/.superpowers/brainstorm/17732-1773678821/demo-capabilities.html"}
+{"source":"user-event","type":"click","text":"A\n    \n      UI Mockups & Wireframes\n      Quick wireframes of layout options — e.g., where the chart style switcher goes, how sidebar widgets dock alongside the chart, how overlay widgets layer on top. Useful for comparing arrangements before writing code.","choice":"mockups","id":null,"timestamp":1773678873955}
+{"source":"user-event","type":"click","text":"C\n    \n      Side-by-Side Comparisons\n      Split-screen views comparing design approaches — e.g., \"overlay as floating panel\" vs \"overlay as translucent full-screen layer\", or comparing how the South Indian grid vs Western wheel handle the same chart data.","choice":"comparisons","id":null,"timestamp":1773678884824}
+{"source":"user-event","type":"click","text":"D\n    \n      Interactive Choices\n      Clickable option cards like this page — when we reach design decision points, I can present options visually and you can click to select. Faster than describing everything in text.","choice":"interactive","id":null,"timestamp":1773678887344}
+{"type":"screen-added","file":"/home/josh/w/astro/soft/gandiva/.superpowers/brainstorm/17732-1773678821/scene-architecture.html"}
+{"type":"screen-added","file":"/home/josh/w/astro/soft/gandiva/.superpowers/brainstorm/17732-1773678821/waiting.html"}
+{"type":"server-stopped","reason":"idle timeout"}
