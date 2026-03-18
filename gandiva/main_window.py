@@ -170,6 +170,9 @@ class MainWindow(QMainWindow):
             self._refresh_tab_bar()
 
         self._display_chart(chart)
+        entry = self._charts[self._current_idx]
+        for popout in entry.get("popouts", []):
+            popout["panel"].set_chart(chart, popout["varga"])
         self.chart_area.chart_scene.clear_all_widgets()
         if self._charts[self._current_idx].get("widgets"):
             self.chart_area.chart_scene.restore_widget_states(
@@ -214,6 +217,9 @@ class MainWindow(QMainWindow):
         if index == self._current_idx:
             self.chart_area.chart_scene.clear_all_widgets()
 
+        entry = self._charts[index]
+        for popout in entry.get("popouts", []):
+            popout["window"].close()
         self._charts.pop(index)
         self.chart_tab_bar.removeTab(index)
         self._current_idx = self.chart_tab_bar.currentIndex()
