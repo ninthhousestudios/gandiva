@@ -5,12 +5,14 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QApplication,
     QTabBar,
+    QToolButton,
 )
 from PyQt6.QtCore import Qt, QSettings
 from PyQt6.QtGui import QShortcut, QKeySequence
 
 from gandiva.widgets.left_panel import LeftPanel
 from gandiva.widgets.chart_area import ChartArea
+from gandiva.widgets.chart_panel import ChartPanel
 from gandiva.widgets.data_panels import DATA_PANELS
 from gandiva.themes import get_theme, DEFAULT_THEME, make_app_stylesheet
 
@@ -160,7 +162,8 @@ class MainWindow(QMainWindow):
                 }
             )
             self.chart_tab_bar.blockSignals(True)
-            self.chart_tab_bar.addTab(label)
+            new_index = self.chart_tab_bar.addTab(label)
+            self._add_tab_popout_button(new_index)
             self._current_idx = len(self._charts) - 1
             self.chart_tab_bar.setCurrentIndex(self._current_idx)
             self.chart_tab_bar.blockSignals(False)
@@ -228,6 +231,89 @@ class MainWindow(QMainWindow):
 
     def _refresh_tab_bar(self):
         self.chart_tab_bar.setVisible(len(self._charts) > 1)
+
+    def _add_tab_popout_button(self, tab_index: int):
+        btn = QToolButton()
+        btn.setText("\u2b0d")  # ⬍
+        btn.setFixedSize(16, 16)
+        btn.setAutoRaise(True)
+        btn.setStyleSheet("font-size: 10px; color: #aaa;")
+        entry = self._charts[tab_index]
+        btn.clicked.connect(lambda: self._pop_out_chart_entry(entry))
+        self.chart_tab_bar.setTabButton(
+            tab_index, QTabBar.ButtonPosition.RightSide, btn
+        )
+
+    def _pop_out_chart_entry(self, entry: dict):
+        chart = entry["chart"]
+        if chart is None:
+            return
+        varga_number = self.chart_area.active_panel.varga_number
+        panel = ChartPanel(show_header=False)
+        panel.set_chart(chart, varga_number)
+        if self.chart_area._current_style:
+            panel.set_chart_style(self.chart_area._current_style)
+        if self.chart_area._current_theme:
+            panel.set_theme(self.chart_area._current_theme)
+
+        window = QWidget()
+        window.setWindowFlags(Qt.WindowType.Window)
+        window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        layout = QVBoxLayout(window)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(panel)
+
+        title = entry.get("key", "Chart")
+        if varga_number is not None:
+            from libaditya.calc.varga import Varga
+            vname = Varga(chart.context, varga_number).varga_name()
+            title = f"{title} \u2014 {vname}"
+        window.setWindowTitle(title)
+        window.resize(500, 500)
+        window.show()
+
+        entry.setdefault("popouts", []).append(
+            {"window": window, "panel": panel, "varga": varga_number}
+        )
+        window.destroyed.connect(lambda: self._remove_popout(entry, window))
+
+    def _remove_popout(self, entry, window):
+        entry["popouts"] = [
+            p for p in entry.get("popouts", []) if p["window"] is not window
+        ]
+
+    def pop_out_varga(self, varga_number: int):
+        if self._current_idx < 0:
+            return
+        entry = self._charts[self._current_idx]
+        chart = entry["chart"]
+        if chart is None:
+            return
+        panel = ChartPanel(show_header=False)
+        panel.set_chart(chart, varga_number)
+        if self.chart_area._current_style:
+            panel.set_chart_style(self.chart_area._current_style)
+        if self.chart_area._current_theme:
+            panel.set_theme(self.chart_area._current_theme)
+
+        window = QWidget()
+        window.setWindowFlags(Qt.WindowType.Window)
+        window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        layout = QVBoxLayout(window)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(panel)
+
+        from libaditya.calc.varga import Varga
+        vname = Varga(chart.context, varga_number).varga_name()
+        title = f"{entry.get('key', 'Chart')} \u2014 {vname}"
+        window.setWindowTitle(title)
+        window.resize(500, 500)
+        window.show()
+
+        entry.setdefault("popouts", []).append(
+            {"window": window, "panel": panel, "varga": varga_number}
+        )
+        window.destroyed.connect(lambda: self._remove_popout(entry, window))
 
     # ── font size ──────────────────────────────────────────────────────────────
 
