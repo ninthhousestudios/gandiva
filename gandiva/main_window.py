@@ -59,6 +59,13 @@ class MainWindow(QMainWindow):
                 lambda visible, n=name: self._on_dock_visibility_changed(n, visible)
             )
 
+        # Wire Vargas dock signals
+        vargas = self.chart_area._data_panels.get("Vargas")
+        if vargas is not None:
+            vargas.varga_pop_out.connect(self.pop_out_varga)
+            vargas.varga_make_main.connect(self.chart_area.open_varga_tab)
+            vargas.varga_side_by_side.connect(self.chart_area.open_side_by_side)
+
         # Shortcuts
         QShortcut(QKeySequence("Ctrl+="), self).activated.connect(
             lambda: self._adjust_fonts(+1)
@@ -383,6 +390,10 @@ class MainWindow(QMainWindow):
         theme = get_theme(name)
         QApplication.instance().setStyleSheet(make_app_stylesheet(theme))
         self.chart_area.set_theme(name)
+        # Update pop-out themes
+        for entry in self._charts:
+            for popout in entry.get("popouts", []):
+                popout["panel"].set_theme(name)
 
     # ── display options changed → recalculate ─────────────────────────────────
 
@@ -400,6 +411,10 @@ class MainWindow(QMainWindow):
     def _on_chart_style_changed(self, style_name: str):
         self.chart_area.set_chart_style(style_name)
         self.left_panel.uncheck_all_overlays()
+        # Update pop-out chart styles
+        entry = self._charts[self._current_idx]
+        for popout in entry.get("popouts", []):
+            popout["panel"].set_chart_style(style_name)
 
     def _on_overlay_toggled(self, overlay_id: str, checked: bool):
         if checked:
