@@ -79,7 +79,8 @@ class ChartPanel(QWidget):
             varga_chart = chart.varga(varga_number)
             self.chart_scene.set_chart(varga_chart)
         else:
-            self.chart_scene.set_chart(chart.rashi())
+            # Pass Chart object directly — renderer calls .rashi() internally
+            self.chart_scene.set_chart(chart)
 
         # Update header label
         if self._show_header and varga_number is not None:

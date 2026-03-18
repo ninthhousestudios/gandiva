@@ -69,46 +69,66 @@ class YogasWidget(QWidget):
         t.setHeaderLabels(["Name", "Translation", "Houses", "Moves"])
         t.header().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
 
+    def _populate_yoga_tree(self, tree, rashi, method_name, row_builder):
+        """Safely populate a yoga tree, handling missing methods."""
+        tree.clear()
+        method = getattr(rashi, method_name, None)
+        if method is None:
+            QTreeWidgetItem(tree, ["Not yet available in libaditya"])
+            return
+        try:
+            for y in method():
+                row_builder(tree, y)
+        except Exception:
+            QTreeWidgetItem(tree, ["Error loading yogas"])
+
     def update_from_chart(self, chart):
         if chart is None:
             return
         rashi = chart.rashi()
 
-        tree = self._trees["Nabhasa Yogas"]
-        tree.clear()
-        for y in rashi.nabhasa_yogas():
-            QTreeWidgetItem(tree, [y.name, y.category, y.translation, str(y.to_move)])
+        self._populate_yoga_tree(
+            self._trees["Nabhasa Yogas"], rashi, "nabhasa_yogas",
+            lambda t, y: QTreeWidgetItem(t, [
+                y.name, getattr(y, 'category', ''),
+                getattr(y, 'translation', ''), str(y.to_move),
+            ])
+        )
 
-        tree = self._trees["Mahapurusha Yogas"]
-        tree.clear()
-        for y in rashi.panchamahapurusha_yogas():
-            QTreeWidgetItem(tree, [
+        self._populate_yoga_tree(
+            self._trees["Mahapurusha Yogas"], rashi, "panchamahapurusha_yogas",
+            lambda t, y: QTreeWidgetItem(t, [
                 y.name, y.planet,
                 "\u2713" if y.present else "\u2717",
                 str(y.house), y.dignity,
             ])
+        )
 
-        tree = self._trees["Solar Yogas"]
-        tree.clear()
-        for y in rashi.solar_yogas():
-            planets_str = ", ".join(y.planets) if y.planets else "\u2014"
-            QTreeWidgetItem(tree, [
-                y.name, "\u2713" if y.present else "\u2717", planets_str,
+        self._populate_yoga_tree(
+            self._trees["Solar Yogas"], rashi, "solar_yogas",
+            lambda t, y: QTreeWidgetItem(t, [
+                y.name, "\u2713" if y.present else "\u2717",
+                ", ".join(y.planets) if y.planets else "\u2014",
             ])
+        )
 
-        tree = self._trees["Lunar Yogas"]
-        tree.clear()
-        for y in rashi.lunar_yogas():
-            planets_str = ", ".join(y.planets) if y.planets else "\u2014"
-            QTreeWidgetItem(tree, [
-                y.name, "\u2713" if y.present else "\u2717", planets_str,
+        self._populate_yoga_tree(
+            self._trees["Lunar Yogas"], rashi, "lunar_yogas",
+            lambda t, y: QTreeWidgetItem(t, [
+                y.name, "\u2713" if y.present else "\u2717",
+                ", ".join(y.planets) if y.planets else "\u2014",
             ])
+        )
 
-        tree = self._trees["Named Yogas"]
-        tree.clear()
-        for y in rashi.akriti_yogas():
-            houses_str = ", ".join(str(h) for h in y.houses)
-            QTreeWidgetItem(tree, [y.name, y.translation, houses_str, str(y.to_move)])
+        self._populate_yoga_tree(
+            self._trees["Named Yogas"], rashi, "akriti_yogas",
+            lambda t, y: QTreeWidgetItem(t, [
+                y.name if hasattr(y, 'name') else str(y[0]),
+                getattr(y, 'translation', ''),
+                ", ".join(str(h) for h in y.houses) if hasattr(y, 'houses') else '',
+                str(y.to_move) if hasattr(y, 'to_move') else str(y[1]),
+            ])
+        )
 
     def adjust_font(self, delta: int):
         pass
