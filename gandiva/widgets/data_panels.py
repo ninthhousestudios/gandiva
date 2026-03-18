@@ -1318,6 +1318,9 @@ class PanchangaWidget(QWidget):
 
 # ── Registry ──────────────────────────────────────────────────────────────────
 
+from gandiva.widgets.vargas_dock import VargasWidget
+from gandiva.widgets.yogas_dock import YogasWidget
+
 DATA_PANELS = {
     "Planets": PlanetsWidget,
     "Cusps": CuspsWidget,
@@ -1325,4 +1328,6 @@ DATA_PANELS = {
     "Dashas": DashasWidget,
     "Kala": KalaWidget,
     "Panchanga": PanchangaWidget,
+    "Vargas": VargasWidget,
+    "Yogas": YogasWidget,
 }
