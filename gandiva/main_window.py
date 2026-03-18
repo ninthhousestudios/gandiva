@@ -6,13 +6,14 @@ from PyQt6.QtWidgets import (
     QApplication,
     QTabBar,
     QToolButton,
+    QLabel,
 )
 from PyQt6.QtCore import Qt, QSettings
 from PyQt6.QtGui import QShortcut, QKeySequence
 
 from gandiva.widgets.left_panel import LeftPanel
 from gandiva.widgets.chart_area import ChartArea
-from gandiva.widgets.chart_panel import ChartPanel
+from gandiva.widgets.chart_panel import ChartPanel, varga_display_name
 from gandiva.widgets.data_panels import DATA_PANELS
 from gandiva.themes import get_theme, DEFAULT_THEME, make_app_stylesheet
 
@@ -134,17 +135,24 @@ class MainWindow(QMainWindow):
         label = chart.context.name.strip() or f"Chart {len(self._charts) + 1}"
         options_state = self.left_panel.get_options_state()
 
-        if self._current_idx >= 0 and self._charts[self._current_idx]["key"] == new_key:
+        is_same_key = (
+            self._current_idx >= 0
+            and self._charts[self._current_idx]["key"] == new_key
+        )
+
+        if is_same_key:
             # Same birth info — recalculate (display options changed), update tab
             self._charts[self._current_idx]["widgets"] = (
                 self.chart_area.chart_scene.get_widget_states()
             )
+            view_state = self.chart_area.save_view_state()
             self._charts[self._current_idx].update(
                 {
                     "chart": chart,
                     "state": birth_state,
                     "options": options_state,
                     "dock_state": self.chart_area.save_dock_state(),
+                    "view_state": view_state,
                 }
             )
             self.chart_tab_bar.setTabText(self._current_idx, label)
@@ -156,6 +164,9 @@ class MainWindow(QMainWindow):
                 )
                 self._charts[self._current_idx]["dock_state"] = (
                     self.chart_area.save_dock_state()
+                )
+                self._charts[self._current_idx]["view_state"] = (
+                    self.chart_area.save_view_state()
                 )
 
             self._charts.append(
@@ -182,11 +193,27 @@ class MainWindow(QMainWindow):
         entry = self._charts[self._current_idx]
         for popout in entry.get("popouts", []):
             popout["panel"].set_chart(chart, popout["varga"])
-        self.chart_area.chart_scene.clear_all_widgets()
-        if self._charts[self._current_idx].get("widgets"):
-            self.chart_area.chart_scene.restore_widget_states(
-                self._charts[self._current_idx]["widgets"]
-            )
+
+        if is_same_key:
+            # Same chart recalculated — preserve view state, just refresh widgets
+            self.chart_area.chart_scene.clear_all_widgets()
+            if entry.get("widgets"):
+                self.chart_area.chart_scene.restore_widget_states(entry["widgets"])
+            # Restore varga view (tabs, side-by-side) after _display_chart reset
+            self.chart_area.restore_view_state(entry["view_state"])
+        else:
+            # New chart — clean slate
+            self.chart_area.chart_scene.clear_all_widgets()
+            for oid in list(self.chart_area.chart_scene._overlays.keys()):
+                self.chart_area.chart_scene.remove_overlay(oid)
+            self.left_panel.uncheck_all_overlays()
+            self.chart_area.restore_view_state({
+                "varga_tabs": [None],
+                "active_panel": 0,
+                "side_by_side": None,
+                "splitter_state": None,
+                "primary_varga": None,
+            })
 
     # ── tab bar events ────────────────────────────────────────────────────────
 
@@ -279,6 +306,22 @@ class MainWindow(QMainWindow):
         if chart is None:
             return
         varga_number = self.chart_area.active_panel.varga_number
+
+        chart_label = chart.context.name.strip() or entry.get("key", "Chart")
+        if varga_number is not None:
+            title = f"{chart_label} \u2014 {varga_display_name(chart.context, varga_number)}"
+        else:
+            title = chart_label
+
+        window = self._make_popout_window(chart, varga_number, title)
+
+        entry.setdefault("popouts", []).append(
+            {"window": window, "panel": window._chart_panel, "varga": varga_number}
+        )
+        window.destroyed.connect(lambda: self._remove_popout(entry, window))
+
+    def _make_popout_window(self, chart, varga_number, title: str):
+        """Create a pop-out window with a header label and chart panel."""
         panel = ChartPanel(show_header=False)
         panel.set_chart(chart, varga_number)
         if self.chart_area._current_style:
@@ -291,21 +334,23 @@ class MainWindow(QMainWindow):
         window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         layout = QVBoxLayout(window)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(panel)
+        layout.setSpacing(0)
 
-        title = entry.get("key", "Chart")
-        if varga_number is not None:
-            from libaditya.calc.varga import Varga
-            vname = Varga(chart.context, varga_number).varga_name()
-            title = f"{title} \u2014 {vname}"
+        header = QLabel(title)
+        header.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        header.setStyleSheet(
+            "font-size: 13px; color: #ccc; padding: 4px; background: #1a1a2a;"
+        )
+        layout.addWidget(header)
+        layout.addWidget(panel, stretch=1)
+
         window.setWindowTitle(title)
         window.resize(500, 500)
         window.show()
 
-        entry.setdefault("popouts", []).append(
-            {"window": window, "panel": panel, "varga": varga_number}
-        )
-        window.destroyed.connect(lambda: self._remove_popout(entry, window))
+        # Stash panel ref on the window for popout tracking
+        window._chart_panel = panel
+        return window
 
     def _remove_popout(self, entry, window):
         entry["popouts"] = [
@@ -319,29 +364,14 @@ class MainWindow(QMainWindow):
         chart = entry["chart"]
         if chart is None:
             return
-        panel = ChartPanel(show_header=False)
-        panel.set_chart(chart, varga_number)
-        if self.chart_area._current_style:
-            panel.set_chart_style(self.chart_area._current_style)
-        if self.chart_area._current_theme:
-            panel.set_theme(self.chart_area._current_theme)
 
-        window = QWidget()
-        window.setWindowFlags(Qt.WindowType.Window)
-        window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-        layout = QVBoxLayout(window)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(panel)
+        chart_label = chart.context.name.strip() or entry.get("key", "Chart")
+        title = f"{chart_label} \u2014 {varga_display_name(chart.context, varga_number)}"
 
-        from libaditya.calc.varga import Varga
-        vname = Varga(chart.context, varga_number).varga_name()
-        title = f"{entry.get('key', 'Chart')} \u2014 {vname}"
-        window.setWindowTitle(title)
-        window.resize(500, 500)
-        window.show()
+        window = self._make_popout_window(chart, varga_number, title)
 
         entry.setdefault("popouts", []).append(
-            {"window": window, "panel": panel, "varga": varga_number}
+            {"window": window, "panel": window._chart_panel, "varga": varga_number}
         )
         window.destroyed.connect(lambda: self._remove_popout(entry, window))
 
@@ -417,10 +447,11 @@ class MainWindow(QMainWindow):
             popout["panel"].set_chart_style(style_name)
 
     def _on_overlay_toggled(self, overlay_id: str, checked: bool):
+        scene = self.chart_area.active_chart_scene
         if checked:
-            self.chart_area.chart_scene.add_overlay(overlay_id)
+            scene.add_overlay(overlay_id)
         else:
-            self.chart_area.chart_scene.remove_overlay(overlay_id)
+            scene.remove_overlay(overlay_id)
 
     def _on_spawn_widget(self, widget_type: str):
         widget_id_map = {
@@ -431,7 +462,7 @@ class MainWindow(QMainWindow):
         }
 
         widget_id = widget_id_map.get(widget_type, "Panchanga")
-        self.chart_area.chart_scene.add_info_widget(widget_id)
+        self.chart_area.active_chart_scene.add_info_widget(widget_id)
 
         if self._current_idx >= 0 and self._current_idx < len(self._charts):
             self._charts[self._current_idx]["widgets"] = (

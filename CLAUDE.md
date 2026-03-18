@@ -1,5 +1,12 @@
 # CLAUDE.md — gandiva
 
+## TODO
+
+- [ ] Fix outer planets toggle in side-by-side vargas
+- [ ] Fix right-side info display in side-by-side view (Planets/Cusps should reflect focused varga, not just rashi)
+- [ ] Implement South Indian chart renderer
+- [ ] Implement North Indian chart renderer
+
 ## What is this?
 
 A PyQt6 desktop GUI for [libaditya](../libaditya), an astrological calculation library. gandiva is a thin presentation layer — all computation is done by libaditya. This is a fun/learning project, not production software.

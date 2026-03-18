@@ -1,0 +1,3 @@
+{"type":"server-started","port":55820,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:55820","screen_dir":"/home/josh/w/astro/soft/gandiva/.superpowers/brainstorm/171053-1773852542"}
+{"type":"screen-added","file":"/home/josh/w/astro/soft/gandiva/.superpowers/brainstorm/171053-1773852542/layout-overview.html"}
+{"type":"server-stopped","reason":"idle timeout"}

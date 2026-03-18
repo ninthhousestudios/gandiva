@@ -6,6 +6,7 @@ from PyQt6.QtCore import Qt, pyqtSignal, QSize
 from PyQt6.QtGui import QPixmap, QPainter
 
 from libaditya.calc.varga import Varga
+from gandiva.widgets.chart_panel import varga_display_name
 
 
 # All varga codes in display order
@@ -34,7 +35,7 @@ class VargaActionWidget(QWidget):
 
         # Mini chart preview
         self._preview = QLabel()
-        self._preview.setFixedSize(150, 150)
+        self._preview.setFixedSize(300, 300)
         self._preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._preview.setStyleSheet(
             "background: #1a1a2a; border: 1px solid #333;"
@@ -70,7 +71,7 @@ class VargaActionWidget(QWidget):
         btn_layout.addStretch()
         layout.addLayout(btn_layout)
 
-    def update_preview(self, chart):
+    def update_preview(self, chart, style_name="Western Wheel"):
         """Render a mini chart preview as a pixmap."""
         self._chart = chart
         if chart is None:
@@ -78,19 +79,23 @@ class VargaActionWidget(QWidget):
             return
 
         from gandiva.scene.chart_scene import ChartScene
+        from gandiva.widgets.chart_panel import _VargaAsChart
         from PyQt6.QtCore import QRectF
 
         scene = ChartScene()
+        scene.set_chart_style(style_name)
+        scene.resize_chart(QRectF(0, 0, 300, 300))
         if self._varga_code == 1:
-            scene.set_chart(chart.rashi())
+            scene.set_chart(chart)
         else:
-            scene.set_chart(chart.varga(self._varga_code))
+            varga = chart.varga(self._varga_code)
+            scene.set_chart(_VargaAsChart(varga, chart.context))
 
-        pixmap = QPixmap(150, 150)
+        pixmap = QPixmap(300, 300)
         pixmap.fill(Qt.GlobalColor.transparent)
         painter = QPainter(pixmap)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        scene.render(painter, QRectF(0, 0, 150, 150))
+        scene.render(painter, QRectF(0, 0, 300, 300))
         painter.end()
         self._preview.setPixmap(pixmap)
 
@@ -105,6 +110,7 @@ class VargasWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._chart = None
+        self._font_size = 14
         self._action_widgets = {}
 
         layout = QVBoxLayout(self)
@@ -187,7 +193,7 @@ class VargasWidget(QWidget):
             return
         for code, (item, action) in self._action_widgets.items():
             try:
-                name = Varga(chart.context, code).varga_name()
+                name = varga_display_name(chart.context, code)
                 item.setText(0, f"{name} (D-{abs(code)})")
             except Exception:
                 item.setText(0, f"D-{abs(code)}")
@@ -202,4 +208,9 @@ class VargasWidget(QWidget):
                 break
 
     def adjust_font(self, delta: int):
-        pass
+        if delta == 0:
+            self._font_size = 14
+        else:
+            self._font_size = max(10, min(28, self._font_size + delta))
+        style = f"QWidget {{ font-size: {self._font_size}px; }}"
+        self.setStyleSheet(style)

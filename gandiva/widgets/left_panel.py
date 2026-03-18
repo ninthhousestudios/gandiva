@@ -354,13 +354,6 @@ class LeftPanel(QWidget):
         print_form.setVerticalSpacing(3)
         print_form.setHorizontalSpacing(6)
 
-        self.print_nakshatras_check = QCheckBox()
-        self.print_nakshatras_check.setChecked(True)
-        self.print_nakshatras_check.stateChanged.connect(
-            self._on_display_option_changed
-        )
-        print_form.addRow("Nakshatras:", self.print_nakshatras_check)
-
         self.print_outer_planets_check = QCheckBox()
         self.print_outer_planets_check.setChecked(True)
         self.print_outer_planets_check.stateChanged.connect(
@@ -562,7 +555,7 @@ class LeftPanel(QWidget):
             cot_planet_order=self.cot_planet_order_combo.currentText(),
             signize=self.signize_check.isChecked(),
             toround=(self.toround_check.isChecked(), self.toround_places_spin.value()),
-            print_nakshatras=self.print_nakshatras_check.isChecked(),
+            print_nakshatras=True,
             print_outer_planets=self.print_outer_planets_check.isChecked(),
             hd_print_hexagrams=self.hd_print_hexagrams_check.isChecked(),
         )
@@ -755,7 +748,6 @@ class LeftPanel(QWidget):
             "signize": self.signize_check.isChecked(),
             "toround": self.toround_check.isChecked(),
             "toround_places": self.toround_places_spin.value(),
-            "print_nakshatras": self.print_nakshatras_check.isChecked(),
             "print_outer_planets": self.print_outer_planets_check.isChecked(),
             "hd_print_hexagrams": self.hd_print_hexagrams_check.isChecked(),
         }
@@ -770,7 +762,7 @@ class LeftPanel(QWidget):
             self.cot_savana_day_check, self.cot_planet_order_combo,
             self.chart_style_combo,
             self.signize_check, self.toround_check, self.toround_places_spin,
-            self.print_nakshatras_check, self.print_outer_planets_check,
+            self.print_outer_planets_check,
             self.hd_print_hexagrams_check,
         ]
         for w in widgets:
@@ -788,7 +780,6 @@ class LeftPanel(QWidget):
         self.signize_check.setChecked(state.get("signize", True))
         self.toround_check.setChecked(state.get("toround", True))
         self.toround_places_spin.setValue(state.get("toround_places", 3))
-        self.print_nakshatras_check.setChecked(state.get("print_nakshatras", True))
         self.print_outer_planets_check.setChecked(state.get("print_outer_planets", True))
         self.hd_print_hexagrams_check.setChecked(state.get("hd_print_hexagrams", False))
 

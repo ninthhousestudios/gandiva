@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, pyqtSignal
 
-from gandiva.widgets.chart_panel import ChartPanel
+from gandiva.widgets.chart_panel import ChartPanel, varga_display_name
 from gandiva.widgets.data_panels import DATA_PANELS
 
 
@@ -44,6 +44,16 @@ class ChartArea(QMainWindow):
         self._varga_tab_bar = QTabBar()
         self._varga_tab_bar.setTabsClosable(True)
         self._varga_tab_bar.setExpanding(False)
+        self._varga_tab_bar.setStyleSheet("""
+            QTabBar::tab {
+                font-size: 16px;
+                padding: 8px 18px;
+                color: #ccc;
+            }
+            QTabBar::tab:selected {
+                color: #ccc;
+            }
+        """)
         self._varga_tab_bar.addTab("Rashi")
         self._varga_tab_bar.setTabButton(0, QTabBar.ButtonPosition.RightSide, None)
         self._varga_tab_bar.setVisible(False)
@@ -91,6 +101,11 @@ class ChartArea(QMainWindow):
     @property
     def chart_scene(self):
         return self._primary_panel.chart_scene
+
+    @property
+    def active_chart_scene(self):
+        """Return the chart scene of the currently active (focused) panel."""
+        return self.active_panel.chart_scene
 
     @property
     def chart_view(self):
@@ -149,9 +164,8 @@ class ChartArea(QMainWindow):
             idx = self._varga_tabs.index(varga_number)
             self._varga_tab_bar.setCurrentIndex(idx)
             return
-        from libaditya.calc.varga import Varga
         if self._chart is not None:
-            name = Varga(self._chart.context, varga_number).varga_name()
+            name = varga_display_name(self._chart.context, varga_number)
         else:
             name = f"D-{abs(varga_number)}"
         self._varga_tabs.append(varga_number)
@@ -194,12 +208,16 @@ class ChartArea(QMainWindow):
                 self._secondary_panel.set_chart_style(self._current_style)
             if self._current_theme:
                 self._secondary_panel.set_theme(self._current_theme)
+            # Show header on primary panel too
+            self._primary_panel.set_header_visible(True)
         if self._chart is not None:
             self._secondary_panel.set_chart(self._chart, varga_number)
+        # Equal split
+        total = self._splitter.width()
+        self._splitter.setSizes([total // 2, total // 2])
         if varga_number not in self._varga_tabs:
-            from libaditya.calc.varga import Varga
             if self._chart is not None:
-                name = Varga(self._chart.context, varga_number).varga_name()
+                name = varga_display_name(self._chart.context, varga_number)
             else:
                 name = f"D-{abs(varga_number)}"
             self._varga_tabs.append(varga_number)
@@ -215,6 +233,7 @@ class ChartArea(QMainWindow):
         self._secondary_panel = None
         self._active_panel_idx = 0
         self._primary_panel.set_active(False)
+        self._primary_panel.set_header_visible(False)
         self._update_tab_bar_visibility()
 
     # ── State save / restore ──────────────────────────────────────────────────
@@ -248,9 +267,8 @@ class ChartArea(QMainWindow):
         self._varga_tabs = [None]
 
         for vn in state.get("varga_tabs", [None])[1:]:
-            from libaditya.calc.varga import Varga
             if self._chart is not None:
-                name = Varga(self._chart.context, vn).varga_name()
+                name = varga_display_name(self._chart.context, vn)
             else:
                 name = f"D-{abs(vn)}"
             self._varga_tabs.append(vn)
