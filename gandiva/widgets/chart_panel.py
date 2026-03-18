@@ -7,6 +7,20 @@ from gandiva.scene.chart_scene import ChartScene
 from gandiva.scene.chart_view import ChartView
 
 
+class _VargaAsChart:
+    """Thin wrapper so a Varga can be passed to renderers that call .rashi()."""
+
+    def __init__(self, varga, context):
+        self._varga = varga
+        self.context = context
+
+    def rashi(self):
+        return self._varga
+
+    def __getattr__(self, name):
+        return getattr(self._varga, name)
+
+
 class ChartPanel(QWidget):
     """Self-contained chart rendering unit.
 
@@ -76,8 +90,9 @@ class ChartPanel(QWidget):
         if chart is None:
             return
         if varga_number is not None:
-            varga_chart = chart.varga(varga_number)
-            self.chart_scene.set_chart(varga_chart)
+            varga = chart.varga(varga_number)
+            # Wrap varga so renderer can call .rashi() on it
+            self.chart_scene.set_chart(_VargaAsChart(varga, chart.context))
         else:
             # Pass Chart object directly — renderer calls .rashi() internally
             self.chart_scene.set_chart(chart)
