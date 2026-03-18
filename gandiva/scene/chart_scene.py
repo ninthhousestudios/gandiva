@@ -32,7 +32,8 @@ class ChartScene(QGraphicsScene):
         self._theme = get_theme(DEFAULT_THEME)
         self._rect = QRectF()
         self._overlays: dict[str, object] = {}
-        self._info_widgets: dict[str, object] = {}
+        self._info_widgets: list = []  # List to support multiple instances
+        self._widget_counter = 0  # Unique ID counter for widgets
         self.setBackgroundBrush(QColor(self._theme["bg"]))
 
     def set_theme(self, name: str) -> None:
@@ -44,7 +45,7 @@ class ChartScene(QGraphicsScene):
             self._renderer.set_theme(self._theme)
         for overlay in self._overlays.values():
             overlay.set_theme(self._theme)
-        for widget in self._info_widgets.values():
+        for widget in self._info_widgets:
             widget.set_theme(self._theme)
 
     def set_chart(self, chart) -> None:
@@ -54,7 +55,7 @@ class ChartScene(QGraphicsScene):
             self._renderer.update_from_chart(chart)
         for overlay in self._overlays.values():
             overlay.update_from_chart(chart)
-        for widget in self._info_widgets.values():
+        for widget in self._info_widgets:
             widget.update_from_chart(chart)
 
     def set_chart_style(self, style_name: str) -> None:
@@ -127,36 +128,6 @@ class ChartScene(QGraphicsScene):
 
     # ── info widget management ──────────────────────────────────────────────
 
-    def add_info_widget(self, widget_id: str) -> None:
-        """Add an info widget by its registry ID."""
-        if widget_id in self._info_widgets:
-            return  # already active
-        entry = INFO_WIDGETS.get(widget_id)
-        if entry is None:
-            return
-
-        widget_class, kwargs = entry
-        widget = widget_class(widget_id=widget_id, title=widget_id, **kwargs)
-        z = self.Z_WIDGET_BASE + len(self._info_widgets)
-        widget.setZValue(z)
-        widget.setAcceptHoverEvents(True)
-        self.addItem(widget)
-        self._info_widgets[widget_id] = widget
-
-        # Connect close signal
-        widget.closed.connect(self.remove_info_widget)
-
-        # Initialize with current state
-        if self._theme:
-            widget.set_theme(self._theme)
-        if self._chart:
-            widget.update_from_chart(self._chart)
-
-        # Auto-place
-        self._place_info_widget(widget)
-
-        self.widget_added.emit(widget_id)
-
     def _place_info_widget(self, widget: InfoWidget) -> None:
         """Place a new info widget in available space around the chart."""
         scene_rect = self._rect
@@ -171,18 +142,27 @@ class ChartScene(QGraphicsScene):
 
         # Candidate positions: corners then edge midpoints
         candidates = [
-            (margin, margin),                                                    # top-left
-            (scene_rect.width() - w - margin, margin),                           # top-right
-            (margin, scene_rect.height() - h - margin),                          # bottom-left
-            (scene_rect.width() - w - margin, scene_rect.height() - h - margin), # bottom-right
-            (scene_rect.width() / 2 - w / 2, margin),                           # top-center
-            (scene_rect.width() / 2 - w / 2, scene_rect.height() - h - margin), # bottom-center
-            (margin, scene_rect.height() / 2 - h / 2),                          # mid-left
-            (scene_rect.width() - w - margin, scene_rect.height() / 2 - h / 2), # mid-right
+            (margin, margin),  # top-left
+            (scene_rect.width() - w - margin, margin),  # top-right
+            (margin, scene_rect.height() - h - margin),  # bottom-left
+            (
+                scene_rect.width() - w - margin,
+                scene_rect.height() - h - margin,
+            ),  # bottom-right
+            (scene_rect.width() / 2 - w / 2, margin),  # top-center
+            (
+                scene_rect.width() / 2 - w / 2,
+                scene_rect.height() - h - margin,
+            ),  # bottom-center
+            (margin, scene_rect.height() / 2 - h / 2),  # mid-left
+            (
+                scene_rect.width() - w - margin,
+                scene_rect.height() / 2 - h / 2,
+            ),  # mid-right
         ]
 
         existing_rects = []
-        for other in self._info_widgets.values():
+        for other in self._info_widgets:
             if other is not widget:
                 existing_rects.append(other.sceneBoundingRect())
 
@@ -200,8 +180,149 @@ class ChartScene(QGraphicsScene):
             scene_rect.height() - h - margin - offset,
         )
 
+    def add_info_widget(self, widget_id: str) -> None:
+        """Add an info widget by its registry ID. Multiple instances allowed."""
+        entry = INFO_WIDGETS.get(widget_id)
+        if entry is None:
+            return
+
+        widget_class, kwargs = entry
+
+        # Generate unique instance ID
+        self._widget_counter += 1
+        instance_id = f"{widget_id}#{self._widget_counter}"
+
+        # Create widget with unique ID
+        widget = widget_class(widget_id=instance_id, title=widget_id, **kwargs)
+        z = self.Z_WIDGET_BASE + len(self._info_widgets)
+        widget.setZValue(z)
+        widget.setAcceptHoverEvents(True)
+        self.addItem(widget)
+        self._info_widgets.append(widget)
+
+        # Connect close signal - pass instance_id to remove the specific widget
+        widget.closed.connect(lambda wid=instance_id: self._remove_widget_instance(wid))
+
+        # Initialize with current state
+        if self._theme:
+            widget.set_theme(self._theme)
+        if self._chart:
+            widget.update_from_chart(self._chart)
+
+        # Auto-place
+        self._place_info_widget(widget)
+
+        self.widget_added.emit(widget_id)
+
+    def _remove_widget_instance(self, instance_id: str) -> None:
+        """Remove a specific widget instance by its unique ID."""
+        for widget in self._info_widgets[
+            :
+        ]:  # Copy list to safely modify during iteration
+            if widget.widget_id == instance_id:
+                self.removeItem(widget)
+                self._info_widgets.remove(widget)
+                # Extract base widget_id for the signal (everything before #)
+                base_id = instance_id.split("#")[0]
+                self.widget_removed.emit(base_id)
+                break
+
     def remove_info_widget(self, widget_id: str) -> None:
-        """Remove an info widget by its registry ID."""
-        if widget_id in self._info_widgets:
-            self.removeItem(self._info_widgets.pop(widget_id))
+        """Remove all info widgets of a given registry ID."""
+        to_remove = [
+            w for w in self._info_widgets if w.widget_id.startswith(f"{widget_id}#")
+        ]
+        for widget in to_remove:
+            self.removeItem(widget)
+            self._info_widgets.remove(widget)
+        if to_remove:
             self.widget_removed.emit(widget_id)
+
+    def get_widget_states(self) -> list[dict]:
+        """Serialize all current widget states for saving per-chart.
+
+        Returns list of widget states with: widget_id, pos, minimized, options
+        """
+        states = []
+        for widget in self._info_widgets:
+            state = {
+                "widget_id": widget.widget_id,
+                "base_id": widget.widget_id.split("#")[0],
+                "pos": {"x": widget.pos().x(), "y": widget.pos().y()},
+                "minimized": getattr(widget, "_minimized", False),
+            }
+            # Capture widget-specific options if available
+            if hasattr(widget, "_levels"):
+                state["levels"] = widget._levels
+            if hasattr(widget, "_highlight_current"):
+                state["highlight_current"] = widget._highlight_current
+            states.append(state)
+        return states
+
+    def restore_widget_states(self, states: list[dict]) -> None:
+        """Restore widgets from saved states."""
+        # Clear current widgets first
+        self.clear_all_widgets()
+
+        # Restore each widget
+        for state in states:
+            widget_id = state.get("base_id")
+            if widget_id is None:
+                continue
+
+            entry = INFO_WIDGETS.get(widget_id)
+            if entry is None:
+                continue
+
+            widget_class, kwargs = entry
+
+            # Generate new unique instance ID
+            self._widget_counter += 1
+            instance_id = f"{widget_id}#{self._widget_counter}"
+
+            # Create widget
+            widget = widget_class(widget_id=instance_id, title=widget_id, **kwargs)
+            z = self.Z_WIDGET_BASE + len(self._info_widgets)
+            widget.setZValue(z)
+            widget.setAcceptHoverEvents(True)
+            self.addItem(widget)
+            self._info_widgets.append(widget)
+
+            # Restore position
+            pos = state.get("pos", {})
+            widget.setPos(pos.get("x", 10), pos.get("y", 10))
+
+            # Restore minimized state
+            if state.get("minimized") and hasattr(widget, "_toggle_minimize"):
+                widget._minimized = False  # Start not minimized
+                widget._toggle_minimize()  # Toggle to minimized
+
+            # Restore widget-specific options
+            if hasattr(widget, "_levels") and "levels" in state:
+                widget._levels = state["levels"]
+                # Update button states if the widget has level buttons
+                if hasattr(widget, "_level_buttons"):
+                    for i, btn in widget._level_buttons.items():
+                        btn.setChecked(i == state["levels"])
+
+            if hasattr(widget, "_highlight_current") and "highlight_current" in state:
+                widget._highlight_current = state["highlight_current"]
+
+            # Connect close signal
+            widget.closed.connect(
+                lambda wid=instance_id: self._remove_widget_instance(wid)
+            )
+
+            # Initialize with current state
+            if self._theme:
+                widget.set_theme(self._theme)
+            if self._chart:
+                widget.update_from_chart(self._chart)
+
+            self.widget_added.emit(widget_id)
+
+    def clear_all_widgets(self) -> None:
+        """Remove all info widgets from the scene."""
+        for widget in self._info_widgets[:]:
+            self.removeItem(widget)
+        self._info_widgets.clear()

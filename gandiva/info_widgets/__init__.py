@@ -10,11 +10,11 @@ from gandiva.info_widgets.panchanga import PanchangaWidget  # noqa: E402
 
 INFO_WIDGETS["Panchanga"] = (PanchangaWidget, {})
 
-from gandiva.info_widgets.dasha import DashaWidget  # noqa: E402
+from gandiva.info_widgets.nakshatra_dasha import NakshatraDashaWidget  # noqa: E402
 
-INFO_WIDGETS["Dasha Periods"] = (DashaWidget, {})
+INFO_WIDGETS["Nakshatra Dashas"] = (NakshatraDashaWidget, {})
 
 from gandiva.info_widgets.mini_varga import MiniVargaWidget  # noqa: E402
 
-INFO_WIDGETS["Mini Navamsha"] = (MiniVargaWidget, {"varga": 9})
 INFO_WIDGETS["Mini Hora"] = (MiniVargaWidget, {"varga": -2})
+INFO_WIDGETS["Varga"] = (MiniVargaWidget, {"varga": 9})
