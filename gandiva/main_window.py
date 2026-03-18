@@ -159,6 +159,8 @@ class MainWindow(QMainWindow):
                     "options": options_state,
                     "widgets": [],
                     "dock_state": self.chart_area.save_dock_state(),
+                    "view_state": None,
+                    "popouts": [],
                 }
             )
             self.chart_tab_bar.blockSignals(True)
@@ -183,7 +185,7 @@ class MainWindow(QMainWindow):
 
     def _on_chart_tab_changed(self, index):
         if 0 <= index < len(self._charts):
-            if self._current_idx >= 0 and self._current_idx < len(self._charts):
+            if 0 <= self._current_idx < len(self._charts):
                 self._charts[self._current_idx]["widgets"] = (
                     self.chart_area.chart_scene.get_widget_states()
                 )
@@ -192,6 +194,9 @@ class MainWindow(QMainWindow):
                 )
                 self._charts[self._current_idx]["dock_state"] = (
                     self.chart_area.save_dock_state()
+                )
+                self._charts[self._current_idx]["view_state"] = (
+                    self.chart_area.save_view_state()
                 )
 
             self._current_idx = index
@@ -209,6 +214,18 @@ class MainWindow(QMainWindow):
                 self.chart_area.chart_scene.restore_widget_states(entry["widgets"])
 
             self._display_chart(entry["chart"])
+
+            view_state = entry.get("view_state")
+            if view_state is not None:
+                self.chart_area.restore_view_state(view_state)
+            else:
+                self.chart_area.restore_view_state({
+                    "varga_tabs": [None],
+                    "active_panel": 0,
+                    "side_by_side": None,
+                    "splitter_state": None,
+                    "primary_varga": None,
+                })
 
     def _on_chart_tab_close(self, index):
         if len(self._charts) <= 1:
