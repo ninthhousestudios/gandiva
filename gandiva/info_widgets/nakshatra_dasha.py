@@ -10,8 +10,6 @@ from PyQt6.QtWidgets import (
     QHeaderView,
     QPushButton,
     QMenu,
-    QScrollArea,
-    QFrame,
 )
 from PyQt6.QtCore import Qt, QPoint
 from PyQt6.QtGui import QColor, QBrush
@@ -51,9 +49,12 @@ class NakshatraDashaWidget(InfoWidget):
         self._levels = 1
         self._last_chart = None
         self._dasha_table = None
-        self._scroll_area = None
+
         self._level_buttons = {}
         self._options_btn = None
+        self._current_btn = None
+
+        self._last_current_row = -1
 
         super().__init__(widget_id=widget_id, title=title)
 
@@ -86,7 +87,13 @@ class NakshatraDashaWidget(InfoWidget):
 
         control_layout.addStretch()
 
-        self._options_btn = QPushButton("⚙")
+        self._current_btn = QPushButton("\u2316")
+        self._current_btn.setFixedSize(24, 24)
+        self._current_btn.setToolTip("Go to current dasha")
+        self._current_btn.clicked.connect(self._goto_current)
+        control_layout.addWidget(self._current_btn)
+
+        self._options_btn = QPushButton("\u2699")
         self._options_btn.setFixedSize(24, 24)
         self._options_btn.setToolTip("Options")
         self._options_btn.clicked.connect(self._show_options_menu)
@@ -94,16 +101,8 @@ class NakshatraDashaWidget(InfoWidget):
 
         layout.addWidget(control_bar)
 
-        # Scrollable table area
-        self._scroll_area = QScrollArea()
-        self._scroll_area.setWidgetResizable(True)
-        self._scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self._scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self._scroll_area.setFrameShape(QFrame.Shape.NoFrame)
-
         self._dasha_table = self._create_dasha_table()
-        self._scroll_area.setWidget(self._dasha_table)
-        layout.addWidget(self._scroll_area)
+        layout.addWidget(self._dasha_table)
 
         return content
 
@@ -172,6 +171,19 @@ class NakshatraDashaWidget(InfoWidget):
         if self._last_chart:
             self.update_from_chart(self._last_chart)
 
+    def _goto_current(self):
+        """Scroll to the deepest currently-active dasha period."""
+        row = self._last_current_row
+        if row < 0 or not self._dasha_table:
+            return
+        if row >= self._dasha_table.rowCount():
+            return
+        item = self._dasha_table.item(row, 0)
+        if item:
+            self._dasha_table.scrollToItem(
+                item, QTableWidget.ScrollHint.PositionAtCenter
+            )
+
     def update_from_chart(self, chart) -> None:
         self._last_chart = chart
 
@@ -218,16 +230,11 @@ class NakshatraDashaWidget(InfoWidget):
 
             # Build rows and get the last highlighted row for scrolling
             last_current_row = self._populate(base, first_dasha, birth_jd, now_jd, yrlen)
+            self._last_current_row = last_current_row
 
-            # Scroll the QScrollArea so the deepest current row is visible
-            if last_current_row >= 0 and self._scroll_area:
-                row_height = self._dasha_table.verticalHeader().defaultSectionSize()
-                header_height = self._dasha_table.horizontalHeader().height()
-                row_y = header_height + last_current_row * row_height
-                viewport_h = self._scroll_area.viewport().height()
-                # Center the row in the viewport
-                scroll_to = max(0, row_y - viewport_h // 2)
-                self._scroll_area.verticalScrollBar().setValue(scroll_to)
+            # Scroll to the deepest current row
+            if last_current_row >= 0:
+                self._goto_current()
 
         except Exception as e:
             import traceback

@@ -18,17 +18,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QComboBox,
     QFileDialog,
-)
-from PyQt6.QtCore import (
-    Qt,
-    QPropertyAnimation,
-    QEasingCurve,
-    pyqtProperty,
-    pyqtSignal,
-    QDateTime,
-    QDate,
-    QTime,
-    QSettings,
+    QMessageBox,
 )
 from PyQt6.QtCore import (
     Qt,
@@ -43,6 +33,8 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtGui import QFont
 
+from libaditya import Chart, EphContext, Location, JulianDay, Circle
+from libaditya import constants as const
 from libaditya.read import read_chtk, read_chtk_location
 from gandiva.overlays import OVERLAYS
 from gandiva.info_widgets import INFO_WIDGETS
@@ -75,13 +67,11 @@ class LeftPanel(QWidget):
     """Collapsible left panel for chart config, overlays and info widgets."""
 
     overlay_toggled = pyqtSignal(str, bool)
-    widget_toggled = pyqtSignal(str, bool)
     spawn_widget = pyqtSignal(str)  # Emitted when user wants to spawn a widget (type)
-    chart_config_changed = pyqtSignal()  # Emitted when any chart config value changes
-    calculate_requested = pyqtSignal()  # Emitted when Calculate button clicked
+    chart_created = pyqtSignal(object)  # Emitted with Chart after calculation
     theme_changed = pyqtSignal(str)  # Emitted when theme is changed
     chart_style_changed = pyqtSignal(str)  # Emitted when chart style changes
-    display_options_changed = pyqtSignal()  # Emitted when display options (signize, toround, print_outer_planets, etc.) change
+    display_options_changed = pyqtSignal()  # Emitted when display options change
 
     def _get_panel_width(self):
         return self.width()
@@ -518,12 +508,118 @@ class LeftPanel(QWidget):
         self.time_edit.setTime(now.time())
 
     def _on_display_option_changed(self):
-        """Called when any display option (signize, toround, print_outer_planets, etc.) changes."""
+        """Called when any display option changes. Recalculate if we have a chart."""
         self.display_options_changed.emit()
 
     def _on_calculate(self):
-        """Emit signal that calculate was requested."""
-        self.calculate_requested.emit()
+        """Build chart from form values and emit chart_created."""
+        self.calculate()
+
+    def calculate(self):
+        """Build chart from current form values."""
+        try:
+            self._calculate()
+        except Exception as e:
+            QMessageBox.critical(self, "Calculation error", str(e))
+
+    def _calculate(self):
+        d = self.date_edit.date()
+        t = self.time_edit.time()
+        utcoffset = self.utcoffset_spin.value()
+
+        local_hour = t.hour() + t.minute() / 60.0 + t.second() / 3600.0
+        utc_hour = local_hour - utcoffset
+        jd = JulianDay((d.year(), d.month(), d.day(), utc_hour), utcoffset=utcoffset)
+
+        location = Location(
+            lat=self.lat_spin.value(),
+            long=self.long_spin.value(),
+            placename=self.placename_edit.text(),
+            utcoffset=utcoffset,
+        )
+
+        zodiac_text = self.zodiac_combo.currentText()
+        if zodiac_text == "Tropical":
+            sysflg, circle, sign_names = const.ECL, Circle.ZODIAC, "zodiac"
+        elif zodiac_text == "Sidereal":
+            sysflg, circle, sign_names = const.SID, Circle.ZODIAC, "zodiac"
+        else:
+            sysflg, circle, sign_names = const.ECL, Circle.ADITYA, "adityas"
+
+        context = EphContext(
+            name=self.name_edit.text(),
+            timeJD=jd,
+            location=location,
+            sysflg=sysflg,
+            ayanamsa=self.ayanamsa_spin.value(),
+            hsys=self.hsys_combo.currentText()[0],
+            circle=circle,
+            sign_names=sign_names,
+            rashi_temporary_friendships=self.rashi_temp_friend_check.isChecked(),
+            rashi_aspects=self.rashi_aspects_combo.currentText(),
+            hd_gate_one=self.hd_gate_one_spin.value(),
+            cot_savana_day=self.cot_savana_day_check.isChecked(),
+            cot_planet_order=self.cot_planet_order_combo.currentText(),
+            signize=self.signize_check.isChecked(),
+            toround=(self.toround_check.isChecked(), self.toround_places_spin.value()),
+            print_nakshatras=self.print_nakshatras_check.isChecked(),
+            print_outer_planets=self.print_outer_planets_check.isChecked(),
+            hd_print_hexagrams=self.hd_print_hexagrams_check.isChecked(),
+        )
+
+        chart = Chart(context=context)
+        self.chart_created.emit(chart)
+
+    # ── birth-info snapshot (for chart tab tracking) ──────────────────────────
+
+    def get_birth_key(self):
+        """Hashable key for chart-affecting options. Changes → new tab."""
+        return (
+            self.date_edit.date().toString(Qt.DateFormat.ISODate),
+            self.time_edit.time().toString("HH:mm:ss"),
+            self.utcoffset_spin.value(),
+            self.lat_spin.value(),
+            self.long_spin.value(),
+            self.zodiac_combo.currentText(),
+            self.ayanamsa_spin.value(),
+            self.hsys_combo.currentText(),
+            self.rashi_temp_friend_check.isChecked(),
+            self.rashi_aspects_combo.currentText(),
+        )
+
+    def get_birth_state(self):
+        """Snapshot of all chart-determining form values."""
+        return {
+            "name": self.name_edit.text(),
+            "date": self.date_edit.date(),
+            "time": self.time_edit.time(),
+            "utcoffset": self.utcoffset_spin.value(),
+            "placename": self.placename_edit.text(),
+            "lat": self.lat_spin.value(),
+            "lon": self.long_spin.value(),
+            "zodiac": self.zodiac_combo.currentText(),
+            "ayanamsa": self.ayanamsa_spin.value(),
+            "hsys": self.hsys_combo.currentText(),
+        }
+
+    def set_birth_state(self, state):
+        """Restore form values without triggering signals."""
+        self.name_edit.setText(state["name"])
+        self.date_edit.setDate(state["date"])
+        self.time_edit.setTime(state["time"])
+        self.utcoffset_spin.setValue(state["utcoffset"])
+        self.placename_edit.setText(state["placename"])
+        self.lat_spin.setValue(state["lat"])
+        self.long_spin.setValue(state["lon"])
+        self.zodiac_combo.blockSignals(True)
+        self.zodiac_combo.setCurrentText(state.get("zodiac", "Aditya"))
+        self.zodiac_combo.blockSignals(False)
+        self.ayanamsa_spin.blockSignals(True)
+        self.ayanamsa_spin.setValue(state.get("ayanamsa", 98))
+        self.ayanamsa_spin.blockSignals(False)
+        self.hsys_combo.blockSignals(True)
+        self.hsys_combo.setCurrentText(state.get("hsys", "C — Campanus"))
+        self.hsys_combo.blockSignals(False)
 
     def _load_default_location(self):
         """Load saved default location from settings."""
@@ -566,7 +662,7 @@ class LeftPanel(QWidget):
         self.utcoffset_spin.setValue(utcoffset)
         self.date_edit.setDate(QDate(year, month, day))
         self.time_edit.setTime(QTime(h, m, s))
-        self.calculate_requested.emit()
+        self.calculate()
 
     def load_location(self):
         """Load only location data from a .chtk file."""

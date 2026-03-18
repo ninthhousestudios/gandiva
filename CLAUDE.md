@@ -25,21 +25,23 @@ python -m gandiva.app
 ```
 gandiva/
   app.py                    # QApplication entry point
-  main_window.py            # MainWindow — top-level layout, splitter, chart tab bar, signal wiring
+  main_window.py            # MainWindow — top-level layout, chart tab bar, signal wiring
   themes.py                 # Theme definitions, app stylesheet generation
   glyphs.py                 # Planet/sign glyph characters
   glyph_renderer.py         # QPainter glyph rendering helpers
 
   widgets/
     left_panel.py           # Left sidebar: Chart Info, Calc Options, Display, Overlays, Widgets tabs
-    chart_input.py          # Right sidebar: Planets, Cusps, Nakshatras, Dashas, Kala, Panchanga tabs
-                            #   Also holds hidden calculation widgets and calculate() method
-    planet_table.py         # (legacy) QTableWidget for planet positions
-    chart_wheel.py          # (legacy) chart wheel widget
+                            #   Also holds _calculate() method and birth key/state management
+    chart_area.py           # ChartArea — nested QMainWindow with ChartView + data dock widgets
+    data_panels.py          # 6 standalone data display widgets (Planets, Cusps, Nakshatras, Dashas, Kala, Panchanga)
+    chart_input.py          # (dead code — replaced by data_panels.py + left_panel.py calc)
+    planet_table.py         # (dead code)
+    chart_wheel.py          # (dead code)
 
   scene/
     chart_scene.py          # QGraphicsScene — hosts chart renderer, overlays, info widgets
-    chart_view.py           # QGraphicsView with zoom/pan
+    chart_view.py           # QGraphicsView — forwards wheel events to proxy widgets for scrolling
 
   renderers/
     __init__.py             # CHART_STYLES registry
@@ -64,39 +66,42 @@ gandiva/
 
 ## Current architecture
 
-### Layout: three-panel splitter
+### Layout
 
 ```
-[Left TabBar] | [Left Panel] | [Chart View (QGraphicsScene)] | [Right Panel] | [Right TabBar]
+[Left TabBar] | [Left Panel] | [ChartArea (nested QMainWindow)] | [Right TabBar]
+                                ├── Central: ChartView (QGraphicsScene)
+                                └── Dock widgets: Planets, Cusps, Nakshatras, Dashas, Kala, Panchanga
 ```
 
-- **Left panel** (`LeftPanel`): collapsible sidebar with animated width. Tabs: Chart Info (birth data form + Calculate), Calc Options (zodiac, ayanamsa, hsys, Jaimini, HD, CoT), Display (chart style, signize, round, themes), Overlays (checkboxes), Widgets (spawn buttons).
-- **Center**: `ChartScene` (QGraphicsScene) + `ChartView` (QGraphicsView). Hosts the chart renderer, overlays, and floating info widgets.
-- **Right panel** (`ChartInputPanel`): collapsible sidebar with animated width. Tabs: Planets (3x4 grid of QTreeWidgets), Cusps (table), Nakshatras (tree grouped by nakshatra), Dashas (Vimshottari + placeholder Rashi), Kala (cardinal points, lunar new year, panchanga, moon phases), Panchanga (monthly table with independent month/year/location).
-- Tab bars live outside the splitter so they're always visible even when panels are collapsed.
-- Both panels use custom `QPropertyAnimation` on width for smooth collapse/expand.
+- **Left panel** (`LeftPanel`): collapsible sidebar with animated width (`QPropertyAnimation`). Tabs: Chart Info (birth data form + Calculate), Calc Options (zodiac, ayanamsa, hsys, Jaimini, HD, CoT), Display (chart style, signize, round, themes), Overlays (checkboxes), Widgets (spawn buttons). Also holds `_calculate()` method and `chart_created` signal.
+- **Center** (`ChartArea`): nested `QMainWindow` (with `setWindowFlags(Qt.WindowType.Widget)`). Central widget is `ChartView` (QGraphicsView + ChartScene). Data panels are `QDockWidget`s that can float, dock, or be closed. All docks start hidden.
+- **Right tab bar**: `QTabBar` with `RoundedEast` shape. Each tab toggles the corresponding dock widget (one at a time). Lives outside ChartArea in the main layout.
+- **Data panels** (`data_panels.py`): 6 standalone widgets (PlanetsWidget, CuspsWidget, NakshatrasWidget, DashasWidget, KalaWidget, PanchangaWidget). Each has `update_from_chart(chart)` and `adjust_font(delta)`. Registered in `DATA_PANELS` dict.
+- Left tab bar lives outside the left panel so it's always visible even when the panel is collapsed.
 
 ### Chart tab system
 
-- `QTabBar` at top of window for multiple charts.
-- Each chart entry stores: `chart`, `key` (birth key), `state` (birth form values), `options` (calc/display options), `widgets` (info widget states).
+- `QTabBar` at top of window for multiple charts (hidden until 2+ charts).
+- Each chart entry stores: `chart`, `key` (birth key), `state` (birth form values), `options` (calc/display options), `widgets` (info widget states), `dock_state` (QByteArray from `ChartArea.saveState()`).
 - `get_birth_key()` determines tab identity — includes birth info + zodiac + ayanamsa + hsys + Jaimini options.
 - Changing birth info → new tab. Changing calc options that are in the key → new tab. Changing display-only options → updates existing tab.
 - Options are saved/restored per chart tab via `get_options_state()`/`set_options_state()` with `blockSignals` to prevent cascading.
+- Dock layout is saved/restored per chart tab via `ChartArea.save_dock_state()`/`restore_dock_state()`.
 
 ### Chart calculation flow
 
-1. Left panel Calculate button → `calculate_requested` signal
-2. `MainWindow._on_calculate_requested()` copies all values from left panel to right panel's hidden widgets
-3. `ChartInputPanel._calculate()` builds `EphContext` + `Chart`, emits `chart_created`
-4. `MainWindow.on_chart_created()` checks birth key, creates/updates tab, calls `_display_chart()`
-5. `_display_chart()` → `chart_scene.set_chart(chart)` + `input_panel.update_info(chart)`
+1. Left panel Calculate button → `LeftPanel._calculate()` builds `EphContext` + `Chart`
+2. `LeftPanel` emits `chart_created(chart)` signal
+3. `MainWindow.on_chart_created()` checks birth key, creates/updates tab, calls `_display_chart()`
+4. `_display_chart()` → `chart_area.set_chart(chart)` (updates scene + all data panels)
 
 ### Info widgets (floating, scene-based)
 
 - `InfoWidget` (base): `QGraphicsProxyWidget` with title bar drag (via event filter), resize grip (painted in `paint()` after `super().paint()`), minimize, close, hover show/hide buttons, z-order raise on click.
 - Spawned from left panel Widgets tab. Multiple instances of same type allowed.
 - Widget states saved/restored per chart tab.
+- `ChartView.wheelEvent` forwards scroll events to proxy widgets so embedded tables are scrollable.
 
 ### Overlays
 
@@ -200,15 +205,24 @@ lunar_new_year(jd)     # has .moon() method
 - **Panchanga tab**: Cal/Sunrise and Savana/Sunrise modes marked WIP (not yet verified correct).
 - **Info widgets**: should eventually be spawnable multiple times with per-instance options (e.g. varga selector). Widget tab UI needs redesign.
 
-## Upcoming: QDockWidget architecture migration
+## Future work
 
-The current right panel uses a `QStackedWidget` + custom `QTabBar` + animation. This should be migrated to `QDockWidget` so that:
-- Each data panel (Planets, Cusps, Nakshatras, Dashas, Kala, Panchanga) can be popped out into its own floating window
-- Panels can be docked back, tabified, or arranged side-by-side
-- Individual planet detail views can also be popped out (useful for Shadbala/Avasthas)
-- The left panel should also be considered for this migration
+- Individual planet detail docks (useful for Shadbala/Avasthas)
+- Varga selector per dock (e.g. view Planets in varga 9)
+- Multiple ChartViews as docks in ChartArea (two charts side by side)
+- HD/CoT tabs on the left panel
+- Dead code cleanup: delete `chart_input.py`, `planet_table.py`, `chart_wheel.py`
 
-This is the next major architectural task. See the planning conversation for details.
+## Recent implementations
+
+### PlanetsWidget (3×4 grid with pop-out)
+
+The Planets tab now displays all 12 planets in a rigid 3×4 grid using `QGridLayout`:
+- **Row 0**: Sun, Moon, Mars, Mercury (Vedic order)
+- **Row 1**: Jupiter, Venus, Saturn, Rahu
+- **Row 2**: Ketu, Uranus, Neptune, Pluto
+
+**Pop-out feature**: Each panel has a ⬍ button that creates a cloned floating `QDockWidget` for detailed reading. The original tree stays locked in the grid; the floating window shows only an X button (no re-dock button). When closed, the clone is destroyed without affecting the grid layout. Implementation uses `topLevelChanged` signal to switch between float/close buttons based on docked vs floating state.
 
 ## Style preferences
 

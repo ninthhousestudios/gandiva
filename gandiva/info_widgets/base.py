@@ -333,3 +333,4 @@ class InfoWidget(QGraphicsProxyWidget):
             return
 
         super().mouseReleaseEvent(event)
+
