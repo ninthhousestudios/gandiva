@@ -58,6 +58,7 @@ class SouthIndianRenderer(ChartRenderer):
         self.is_aditya = True
         self.selected_planet = None
         self._planet_positions = []   # [(name, x, y, info_str)]
+        self._cusp_positions = []     # [(label, x, y, tip)] filled during paint
         self._sign_data = {}          # sign_num → [(name, retro, dignity, info_str)]
         self._cusp_in_sign = {}       # sign_num → cusp_number (1-12)
         self._center_pixmap = QPixmap(CENTER_IMAGE)
