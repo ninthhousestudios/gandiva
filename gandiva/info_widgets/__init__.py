@@ -18,3 +18,7 @@ from gandiva.info_widgets.mini_varga import MiniVargaWidget  # noqa: E402
 
 INFO_WIDGETS["Mini Hora"] = (MiniVargaWidget, {"varga": -2})
 INFO_WIDGETS["Varga"] = (MiniVargaWidget, {"varga": 9})
+
+from gandiva.info_widgets.dignity import DignityWidget  # noqa: E402
+
+INFO_WIDGETS["Dignity"] = (DignityWidget, {})

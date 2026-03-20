@@ -22,11 +22,8 @@ CENTER_IMAGE = "/home/josh/nhs/images/logo/prometheus-footer.png"
 
 
 def _fmt_lon(obj) -> str:
-    """Format a planet or cusp longitude per context settings.
-    Signize on → DD:MM:SS within sign; off → full ecliptic longitude float."""
-    if obj.context.signize:
-        return obj.in_sign_longitude()
-    return str(obj.amsha_longitude())
+    """Format a planet or cusp longitude — works for both rashi and vargas."""
+    return obj.longitude()
 
 
 ZODIAC_NAMES = [

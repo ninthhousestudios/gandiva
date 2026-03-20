@@ -61,6 +61,8 @@ _VEDIC_ORDER = [
     "Chiron",
 ]
 
+_SHADBALA_PLANETS = {"Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"}
+
 _CHART_PLANETS = [
     "Sun",
     "Moon",
@@ -261,6 +263,15 @@ class FloatingPlanetDock(QDockWidget):
         event.accept()
 
 
+_KARAKA_ABBREVS = ["AK", "AmK", "BK", "MK", "PuK", "GK", "DK"]
+
+_PLANET_GLYPHS_UNICODE = {
+    "Sun": "\u2609", "Moon": "\u263D", "Mars": "\u2642",
+    "Mercury": "\u263F", "Jupiter": "\u2643", "Venus": "\u2640",
+    "Saturn": "\u2644",
+}
+
+
 class PlanetsWidget(QWidget):
     """Widget with 3x4 grid of planet panels, each poppable to floating docks."""
 
@@ -269,9 +280,20 @@ class PlanetsWidget(QWidget):
         self._font_size = DEFAULT_FONT_SIZE
         self._last_chart = None
 
-        layout = QGridLayout(self)
-        layout.setSpacing(4)
-        layout.setContentsMargins(4, 4, 4, 4)
+        outer = QVBoxLayout(self)
+        outer.setSpacing(4)
+        outer.setContentsMargins(4, 4, 4, 4)
+
+        self._karaka_label = QLabel("")
+        self._karaka_label.setWordWrap(True)
+        f = self._karaka_label.font()
+        f.setPointSize(f.pointSize() * 2)
+        self._karaka_label.setFont(f)
+        outer.addWidget(self._karaka_label)
+
+        grid = QGridLayout()
+        grid.setSpacing(4)
+        outer.addLayout(grid)
 
         self.panels: dict[str, PlanetPanel] = {}
         self._floating_docks: dict[str, FloatingPlanetDock] = {}
@@ -281,7 +303,7 @@ class PlanetsWidget(QWidget):
             row, col = divmod(idx, 4)
             panel = PlanetPanel(name)
             panel.pop_out_requested.connect(self._on_pop_out)
-            layout.addWidget(panel, row, col)
+            grid.addWidget(panel, row, col)
             self.panels[name] = panel
 
     def _on_pop_out(self, planet_name: str):
@@ -362,7 +384,20 @@ class PlanetsWidget(QWidget):
 
     def update_from_chart(self, chart):
         self._last_chart = chart
-        planets = dict(chart.rashi().planets().items())
+        rashi = chart.rashi()
+        planets = dict(rashi.planets().items())
+
+        # Update karaka summary line
+        try:
+            karakas = rashi.planets().jaimini_karakas()
+            parts = []
+            for i, planet in enumerate(karakas):
+                abbrev = _KARAKA_ABBREVS[i] if i < len(_KARAKA_ABBREVS) else ""
+                glyph = _PLANET_GLYPHS_UNICODE.get(planet.planet_name, "")
+                parts.append(f"{abbrev}:{glyph}")
+            self._karaka_label.setText("  ".join(parts))
+        except Exception:
+            self._karaka_label.setText("")
 
         def bold_item(parent, texts):
             item = QTreeWidgetItem(parent, texts)
@@ -418,8 +453,92 @@ class PlanetsWidget(QWidget):
                 except Exception:
                     pass
 
-                bold_item(tree, ["Shadbala", ""])
-                bold_item(tree, ["Avasthas", ""])
+                # Shadbala — only for the 7 karakas
+                if name in _SHADBALA_PLANETS:
+                    sb = bold_item(tree, ["Shadbala", ""])
+                    try:
+                        QTreeWidgetItem(sb, ["Sthana Bala", f"{planet.sthana_bala():.1f}"])
+                        # Sthana Bala components
+                        QTreeWidgetItem(sb, ["  Ucca", f"{planet.ucca_bala():.1f}"])
+                        QTreeWidgetItem(sb, ["  Saptavargaja", f"{planet.saptavargaja_bala():.1f}"])
+                        QTreeWidgetItem(sb, ["  Sama-Visama", f"{planet.sama_visama_bala():.1f}"])
+                        QTreeWidgetItem(sb, ["  Kendradi", f"{planet.kendradi_bala():.1f}"])
+                        QTreeWidgetItem(sb, ["  Drekkana", f"{planet.drekkana_bala():.1f}"])
+                        QTreeWidgetItem(sb, ["Dig Bala", f"{planet.attributes['dig_bala']:.1f}"])
+                        QTreeWidgetItem(sb, ["Ayana Bala", f"{planet.ayana_bala():.1f}"])
+                        QTreeWidgetItem(sb, ["Cheshta Bala", f"{planet.cheshta_bala():.1f}"])
+                        QTreeWidgetItem(sb, ["Drig Bala", f"{planet.drig_bala():.1f}"])
+                    except Exception:
+                        pass
+
+                # Avasthas — only for the 7 karakas
+                if name in _SHADBALA_PLANETS:
+                    av = bold_item(tree, ["Avasthas", ""])
+                    try:
+                        # Jagradadi
+                        jagradadi = planet.jagradadi_avastha()
+                        if jagradadi:
+                            QTreeWidgetItem(av, ["Jagradadi", jagradadi])
+                    except Exception:
+                        pass
+                    try:
+                        # Baladi
+                        baladi = planet.baladi_avastha()
+                        if baladi:
+                            QTreeWidgetItem(av, ["Baladi", baladi])
+                    except Exception:
+                        pass
+                    try:
+                        # Deeptadi
+                        deeptadi = planet.deeptadi_avastha()
+                        if deeptadi:
+                            QTreeWidgetItem(av, ["Deeptadi", deeptadi])
+                    except Exception:
+                        pass
+                    try:
+                        # Shayanadi
+                        shayanadi = planet.shayanadi_avastha()
+                        if shayanadi:
+                            QTreeWidgetItem(av, ["Shayanadi", shayanadi])
+                    except Exception:
+                        pass
+                    try:
+                        # Lajjitaadi — receiving and giving
+                        la_node = QTreeWidgetItem(av, ["Lajjitaadi", ""])
+                        f = la_node.font(0)
+                        f.setBold(True)
+                        la_node.setFont(0, f)
+
+                        # Receiving: avasthas this planet has from others
+                        recv_data = planet.lajjitaadi_avasthas_receiving()
+                        recv_node = QTreeWidgetItem(la_node, ["Receiving", ""])
+                        if recv_data:
+                            for avastha_name, factors in recv_data.items():
+                                avastha_item = QTreeWidgetItem(recv_node, [avastha_name.capitalize(), ""])
+                                for factor in factors:
+                                    src = factor.get("source", "")
+                                    p = factor.get("planet", "")
+                                    strength = factor.get("strength", "")
+                                    detail = f"{p} ({src}, {strength})" if strength else f"{p} ({src})"
+                                    QTreeWidgetItem(avastha_item, [p, f"{src}, {strength}"])
+                        else:
+                            QTreeWidgetItem(recv_node, ["(none)", ""])
+
+                        # Giving: avasthas this planet causes in others
+                        give_data = planet.lajjitaadi_avasthas_giving()
+                        give_node = QTreeWidgetItem(la_node, ["Giving", ""])
+                        if give_data:
+                            for avastha_name, factors in give_data.items():
+                                avastha_item = QTreeWidgetItem(give_node, [avastha_name.capitalize(), ""])
+                                for factor in factors:
+                                    to = factor.get("to", "")
+                                    src = factor.get("source", "")
+                                    strength = factor.get("strength", "")
+                                    QTreeWidgetItem(avastha_item, [f"→ {to}", f"{src}, {strength}"])
+                        else:
+                            QTreeWidgetItem(give_node, ["(none)", ""])
+                    except Exception:
+                        pass
 
                 for i in range(tree.topLevelItemCount()):
                     item = tree.topLevelItem(i)
@@ -1321,6 +1440,8 @@ class PanchangaWidget(QWidget):
 from gandiva.widgets.vargas_dock import VargasWidget
 from gandiva.widgets.yogas_dock import YogasWidget
 
+from gandiva.widgets.jaimini_panel import JaiminiPanel
+
 DATA_PANELS = {
     "Planets": PlanetsWidget,
     "Cusps": CuspsWidget,
@@ -1330,4 +1451,5 @@ DATA_PANELS = {
     "Panchanga": PanchangaWidget,
     "Vargas": VargasWidget,
     "Yogas": YogasWidget,
+    "Jaimini": JaiminiPanel,
 }

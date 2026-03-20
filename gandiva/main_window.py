@@ -111,15 +111,16 @@ class MainWindow(QMainWindow):
         root_layout.addWidget(content_row, stretch=1)
         self.setCentralWidget(root)
 
-        # ── theme ─────────────────────────────────────────────────────────────
-        saved_theme = QSettings("gandiva", "gandiva").value("theme", DEFAULT_THEME)
-        self.left_panel.theme_combo.blockSignals(True)
-        self.left_panel.theme_combo.setCurrentText(saved_theme)
-        self.left_panel.theme_combo.blockSignals(False)
-        self._apply_theme(saved_theme)
+        # ── restore saved display defaults ──────────────────────────────────
+        self.left_panel.load_display_defaults()
+        self._apply_theme(self.left_panel.theme_combo.currentText())
 
         # ── initial chart style + calculate ───────────────────────────────────
-        self.chart_area.set_chart_style("Western Wheel")
+        initial_style = self.left_panel.chart_style_combo.currentText()
+        self.chart_area.set_chart_style(initial_style)
+        vargas = self.chart_area._data_panels.get("Vargas")
+        if vargas:
+            vargas.set_chart_style(initial_style)
         self.left_panel.calculate()
 
     # ── chart display ─────────────────────────────────────────────────────────
@@ -183,7 +184,7 @@ class MainWindow(QMainWindow):
             )
             self.chart_tab_bar.blockSignals(True)
             new_index = self.chart_tab_bar.addTab(label)
-            self._add_tab_popout_button(new_index)
+            # Close button comes from setTabsClosable(True)
             self._current_idx = len(self._charts) - 1
             self.chart_tab_bar.setCurrentIndex(self._current_idx)
             self.chart_tab_bar.blockSignals(False)
@@ -445,6 +446,10 @@ class MainWindow(QMainWindow):
         entry = self._charts[self._current_idx]
         for popout in entry.get("popouts", []):
             popout["panel"].set_chart_style(style_name)
+        # Update varga preview style
+        vargas = self.chart_area._data_panels.get("Vargas")
+        if vargas:
+            vargas.set_chart_style(style_name)
 
     def _on_overlay_toggled(self, overlay_id: str, checked: bool):
         scene = self.chart_area.active_chart_scene
@@ -459,6 +464,7 @@ class MainWindow(QMainWindow):
             "Vargas": "Varga",
             "Rashi Dashas": "Rashi Dashas",
             "Panchanga": "Panchanga",
+            "Dignity": "Dignity",
         }
 
         widget_id = widget_id_map.get(widget_type, "Panchanga")

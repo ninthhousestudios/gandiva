@@ -110,6 +110,7 @@ class VargasWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._chart = None
+        self._chart_style = "Western Wheel"
         self._font_size = 14
         self._action_widgets = {}
 
@@ -186,6 +187,17 @@ class VargasWidget(QWidget):
 
         self._tree.setItemWidget(child, 0, custom_widget)
 
+    def set_chart_style(self, style_name: str):
+        """Update chart style used for varga previews."""
+        if style_name == self._chart_style:
+            return
+        self._chart_style = style_name
+        # Re-render any currently expanded previews
+        if self._chart is not None:
+            for code, (item, action) in self._action_widgets.items():
+                if item.isExpanded():
+                    action.update_preview(self._chart, self._chart_style)
+
     def update_from_chart(self, chart):
         """Update varga names and mini previews."""
         self._chart = chart
@@ -198,13 +210,13 @@ class VargasWidget(QWidget):
             except Exception:
                 item.setText(0, f"D-{abs(code)}")
             if item.isExpanded():
-                action.update_preview(chart)
+                action.update_preview(chart, self._chart_style)
 
     def _on_item_expanded(self, item):
         """Lazy-load mini preview when a varga row is expanded."""
         for code, (tree_item, action) in self._action_widgets.items():
             if tree_item is item and self._chart is not None:
-                action.update_preview(self._chart)
+                action.update_preview(self._chart, self._chart_style)
                 break
 
     def adjust_font(self, delta: int):

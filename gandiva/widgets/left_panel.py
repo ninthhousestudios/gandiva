@@ -393,6 +393,13 @@ class LeftPanel(QWidget):
         theme_form.addRow("Theme:", self.theme_combo)
 
         disp_layout.addWidget(theme_group)
+
+        # Set as Default button
+        default_btn = QPushButton("Set as Default")
+        default_btn.setToolTip("Save current display options as startup defaults")
+        default_btn.clicked.connect(self._save_display_defaults)
+        disp_layout.addWidget(default_btn)
+
         disp_layout.addStretch()
 
         self.stack.addWidget(disp_page)
@@ -432,6 +439,7 @@ class LeftPanel(QWidget):
             "Vargas",
             "Rashi Dashas",
             "Panchanga",
+            "Dignity",
         ]
 
         for widget_type in self._widget_types:
@@ -629,6 +637,39 @@ class LeftPanel(QWidget):
         s.setValue("default/lat", self.lat_spin.value())
         s.setValue("default/lon", self.long_spin.value())
         s.setValue("default/utcoffset", self.utcoffset_spin.value())
+
+    def _save_display_defaults(self):
+        """Save current display options as startup defaults."""
+        s = QSettings("gandiva", "gandiva")
+        s.setValue("display/chart_style", self.chart_style_combo.currentText())
+        s.setValue("display/signize", self.signize_check.isChecked())
+        s.setValue("display/toround", self.toround_check.isChecked())
+        s.setValue("display/toround_places", self.toround_places_spin.value())
+        s.setValue("display/print_outer_planets", self.print_outer_planets_check.isChecked())
+        s.setValue("display/hd_print_hexagrams", self.hd_print_hexagrams_check.isChecked())
+        s.setValue("display/theme", self.theme_combo.currentText())
+
+    def load_display_defaults(self):
+        """Restore saved display defaults (called during init)."""
+        s = QSettings("gandiva", "gandiva")
+        if not s.contains("display/chart_style"):
+            return  # no saved defaults yet
+        widgets = [
+            self.chart_style_combo, self.signize_check, self.toround_check,
+            self.toround_places_spin, self.print_outer_planets_check,
+            self.hd_print_hexagrams_check, self.theme_combo,
+        ]
+        for w in widgets:
+            w.blockSignals(True)
+        self.chart_style_combo.setCurrentText(s.value("display/chart_style", "Western Wheel"))
+        self.signize_check.setChecked(s.value("display/signize", True, type=bool))
+        self.toround_check.setChecked(s.value("display/toround", True, type=bool))
+        self.toround_places_spin.setValue(int(s.value("display/toround_places", 3)))
+        self.print_outer_planets_check.setChecked(s.value("display/print_outer_planets", True, type=bool))
+        self.hd_print_hexagrams_check.setChecked(s.value("display/hd_print_hexagrams", False, type=bool))
+        self.theme_combo.setCurrentText(s.value("display/theme", "Cosmic"))
+        for w in widgets:
+            w.blockSignals(False)
 
     def load_chtk(self):
         """Load chart data from a .chtk file."""

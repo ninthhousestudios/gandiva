@@ -30,6 +30,7 @@ class ChartScene(QGraphicsScene):
         self._renderer = None
         self._chart = None
         self._theme = get_theme(DEFAULT_THEME)
+        self._chart_style_name = "Western Wheel"
         self._rect = QRectF()
         self._overlays: dict[str, object] = {}
         self._info_widgets: list = []  # List to support multiple instances
@@ -64,6 +65,8 @@ class ChartScene(QGraphicsScene):
         if renderer_class is None:
             return
 
+        self._chart_style_name = style_name
+
         # Remove old renderer
         if self._renderer:
             self.removeItem(self._renderer)
@@ -84,6 +87,11 @@ class ChartScene(QGraphicsScene):
         # Clear all overlays
         for overlay_id in list(self._overlays.keys()):
             self.remove_overlay(overlay_id)
+
+        # Propagate to info widgets
+        for widget in self._info_widgets:
+            if hasattr(widget, 'set_chart_style'):
+                widget.set_chart_style(style_name)
 
     def resize_chart(self, rect: QRectF) -> None:
         """Called by ChartView on resize. Propagates to renderer and overlays."""
@@ -204,6 +212,8 @@ class ChartScene(QGraphicsScene):
         widget.closed.connect(lambda wid=instance_id: self._remove_widget_instance(wid))
 
         # Initialize with current state
+        if hasattr(widget, 'set_chart_style'):
+            widget.set_chart_style(self._chart_style_name)
         if self._theme:
             widget.set_theme(self._theme)
         if self._chart:

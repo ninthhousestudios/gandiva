@@ -19,6 +19,8 @@ def varga_display_name(context, varga_number):
 class _VargaPlanetProxy:
     """Proxy a Planet so ecliptic_longitude() returns the varga (amsha) longitude."""
 
+    _is_varga_proxy = True
+
     def __init__(self, planet):
         self._planet = planet
 
@@ -31,6 +33,8 @@ class _VargaPlanetProxy:
 
 class _VargaCuspProxy:
     """Proxy a Cusp so ecliptic_longitude() returns the varga (amsha) longitude."""
+
+    _is_varga_proxy = True
 
     def __init__(self, cusp):
         self._cusp = cusp
