@@ -18,3 +18,13 @@ build-backend = "hatchling.build"
 
 [tool.uv.sources]
 libaditya = { path = "../libaditya" }
+
+[tool.nuitka]
+mode = "standalone"
+output-dir = "build"
+enable-plugins = ["pyqt6"]
+include-qt-plugins = "sensible"
+include-package = ["libaditya"]
+include-package-data = ["libaditya", "gandiva"]
+follow-imports = true
+nofollow-import-to = ["tkinter", "unittest", "test", "setuptools", "pip", "distutils"]

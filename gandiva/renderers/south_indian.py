@@ -20,14 +20,12 @@ from libaditya import constants as const
 from gandiva.glyphs import PLANET_GLYPHS, SIGN_GLYPHS
 from gandiva.glyph_renderer import draw_glyph
 from gandiva.renderers.base import ChartRenderer
+from gandiva.assets import CENTER_IMAGE
 
 
 def _fmt_lon(obj) -> str:
     """Format a planet or cusp longitude — works for both rashi and vargas."""
     return obj.longitude()
-
-
-CENTER_IMAGE = "/home/josh/nhs/images/logo/prometheus-footer.png"
 
 # Fixed grid positions — clockwise from top-left (Pisces).
 # (row, col) → sign number (1-indexed)

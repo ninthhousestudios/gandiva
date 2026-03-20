@@ -87,6 +87,9 @@ class MainWindow(QMainWindow):
         self.left_panel.display_options_changed.connect(
             self._on_display_options_changed
         )
+        self.left_panel.rashi_aspect_mode_changed.connect(
+            self._on_rashi_aspect_mode_changed
+        )
         self.chart_area.chart_scene.overlay_removed.connect(
             self.left_panel.on_overlay_removed
         )
@@ -450,6 +453,15 @@ class MainWindow(QMainWindow):
         vargas = self.chart_area._data_panels.get("Vargas")
         if vargas:
             vargas.set_chart_style(style_name)
+
+    def _on_rashi_aspect_mode_changed(self, mode: str):
+        scene = self.chart_area.active_chart_scene
+        overlay = scene._overlays.get("Rashi Aspects")
+        if overlay:
+            overlay.set_aspect_mode(mode)
+        indicators = self.chart_area._data_panels.get("Indicators")
+        if indicators:
+            indicators.set_aspect_mode(mode)
 
     def _on_overlay_toggled(self, overlay_id: str, checked: bool):
         scene = self.chart_area.active_chart_scene

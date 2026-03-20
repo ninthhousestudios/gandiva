@@ -1441,6 +1441,7 @@ from gandiva.widgets.vargas_dock import VargasWidget
 from gandiva.widgets.yogas_dock import YogasWidget
 
 from gandiva.widgets.jaimini_panel import JaiminiPanel
+from gandiva.widgets.jaimini_indicators import JaiminiIndicatorsPanel
 
 DATA_PANELS = {
     "Planets": PlanetsWidget,
@@ -1452,4 +1453,5 @@ DATA_PANELS = {
     "Vargas": VargasWidget,
     "Yogas": YogasWidget,
     "Jaimini": JaiminiPanel,
+    "Indicators": JaiminiIndicatorsPanel,
 }

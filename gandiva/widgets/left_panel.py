@@ -72,6 +72,7 @@ class LeftPanel(QWidget):
     theme_changed = pyqtSignal(str)  # Emitted when theme is changed
     chart_style_changed = pyqtSignal(str)  # Emitted when chart style changes
     display_options_changed = pyqtSignal()  # Emitted when display options change
+    rashi_aspect_mode_changed = pyqtSignal(str)  # Emitted when rashi aspect combo changes
 
     def _get_panel_width(self):
         return self.width()
@@ -260,6 +261,7 @@ class LeftPanel(QWidget):
         asp_row.addWidget(QLabel("Aspects:"))
         self.rashi_aspects_combo = QComboBox()
         self.rashi_aspects_combo.addItems(["quadrant", "element", "conventional"])
+        self.rashi_aspects_combo.currentTextChanged.connect(self.rashi_aspect_mode_changed)
         asp_row.addWidget(self.rashi_aspects_combo)
         asp_row.addStretch()
         jaimini_lay.addLayout(asp_row)

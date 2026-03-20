@@ -8,15 +8,17 @@ import math
 from PyQt6.QtCore import Qt, QPointF
 from PyQt6.QtGui import QPen, QColor, QPolygonF
 
+from libaditya import constants as const
+
 from gandiva.overlays.base import ChartOverlay
 
 
 # Must match south_indian.py grid layout
 _SIGN_TO_CELL = {
-    3: (0, 0),  2: (0, 1),  1: (0, 2), 12: (0, 3),
-    4: (1, 0),                          11: (1, 3),
-    5: (2, 0),                          10: (2, 3),
-    6: (3, 0),  7: (3, 1),  8: (3, 2),  9: (3, 3),
+    12: (0, 0),  1: (0, 1),  2: (0, 2),  3: (0, 3),
+    11: (1, 0),                           4: (1, 3),
+    10: (2, 0),                           5: (2, 3),
+     9: (3, 0),  8: (3, 1),  7: (3, 2),  6: (3, 3),
 }
 
 
@@ -29,22 +31,53 @@ class RashiAspectsOverlay(ChartOverlay):
         super().__init__(parent)
         self._aspect_pairs = []  # [(sign1_num, sign2_num, direction)]
         # direction: 1 = sign1→sign2, 2 = sign2→sign1, 3 = mutual
+        self._aspect_mode = None  # override; None = use chart's mode
+        self._occupied_signs = []  # sign numbers that have grahas
 
     def update_from_chart(self, chart) -> None:
-        self._aspect_pairs = []
+        self._occupied_signs = []
         try:
             signs = chart.rashi().signs()
-            sign_list = list(signs)
-            for i in range(len(sign_list)):
-                for j in range(i + 1, len(sign_list)):
-                    s1 = sign_list[i]
-                    s2 = sign_list[j]
-                    result = signs.rashi_aspect_between(s1, s2)
-                    if result != 0:
-                        self._aspect_pairs.append((s1.sign(), s2.sign(), result))
+            for sign in signs:
+                if sign.grahas():
+                    self._occupied_signs.append(sign.sign())
         except Exception:
             pass
+        self._recompute_aspects(chart)
         super().update_from_chart(chart)
+
+    def set_aspect_mode(self, mode: str) -> None:
+        self._aspect_mode = mode
+        self._recompute_aspects(self._chart)
+        self.update()
+
+    def _recompute_aspects(self, chart) -> None:
+        self._aspect_pairs = []
+        if not chart or not self._occupied_signs:
+            return
+        try:
+            mode = self._aspect_mode or chart.rashi().signs().context.rashi_aspects
+            aspect_table = const.rashi_aspects[mode]
+
+            seen = {}
+            for sign_num in self._occupied_signs:
+                for target_num in aspect_table[sign_num]:
+                    seen[(sign_num, target_num)] = True
+
+            # Collapse into directional pairs: 1=s1→s2, 2=s2→s1, 3=mutual
+            pairs = {}
+            for (src, tgt) in seen:
+                key = (min(src, tgt), max(src, tgt))
+                if key not in pairs:
+                    pairs[key] = 0
+                if src == key[0]:
+                    pairs[key] |= 1
+                else:
+                    pairs[key] |= 2
+
+            self._aspect_pairs = [(s1, s2, d) for (s1, s2), d in pairs.items()]
+        except Exception:
+            pass
 
     def _grid_geometry(self):
         rect = self._rect

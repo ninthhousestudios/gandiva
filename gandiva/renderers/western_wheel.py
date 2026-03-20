@@ -17,8 +17,7 @@ from gandiva.glyphs import PLANET_GLYPHS, SIGN_GLYPHS
 from gandiva.glyph_renderer import draw_glyph, clear_cache
 from gandiva.themes import get_theme, DEFAULT_THEME
 from gandiva.renderers.base import ChartRenderer
-
-CENTER_IMAGE = "/home/josh/nhs/images/logo/prometheus-footer.png"
+from gandiva.assets import CENTER_IMAGE
 
 
 def _fmt_lon(obj) -> str:
