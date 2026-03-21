@@ -44,6 +44,8 @@ def main():
 
     if platform.system() == "Windows":
         cmd.append("--windows-console-mode=disable")
+        cmd.append("--windows-icon-from-ico=prometheus-footer.ico")
+        cmd.append("--output-filename=gandiva.exe")
 
     cmd.append("gandiva/app.py")
 
