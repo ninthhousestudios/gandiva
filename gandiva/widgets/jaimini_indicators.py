@@ -5,8 +5,6 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QScrollArea, QTreeWidget, QTreeWidgetItem,
     QPushButton, QComboBox, QLabel,
 )
-from PyQt6.QtGui import QFont
-
 from libaditya.calc.jaimini_get import Gets
 from libaditya import constants as const
 

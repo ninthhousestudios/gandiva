@@ -31,13 +31,10 @@ from PyQt6.QtCore import (
     QTime,
     QSettings,
 )
-from PyQt6.QtGui import QFont
-
 from libaditya import Chart, EphContext, Location, JulianDay, Circle
 from libaditya import constants as const
 from libaditya.read import read_chtk, read_chtk_location
 from gandiva.overlays import OVERLAYS
-from gandiva.info_widgets import INFO_WIDGETS
 
 
 PANEL_WIDTH = 220
@@ -199,11 +196,11 @@ class LeftPanel(QWidget):
         self.open_location_button.clicked.connect(self.load_location)
         info_layout.addWidget(self.open_location_button)
 
-        info_layout.addStretch()
-
         self.calc_button = QPushButton("Calculate")
         self.calc_button.clicked.connect(self._on_calculate)
         info_layout.addWidget(self.calc_button)
+
+        info_layout.addStretch()
 
         self.stack.addWidget(info_page)
 
@@ -222,10 +219,12 @@ class LeftPanel(QWidget):
         self.zodiac_combo.addItems(["Aditya", "Tropical", "Sidereal"])
         basic_form.addRow("Zodiac:", self.zodiac_combo)
 
-        self.ayanamsa_spin = QSpinBox()
-        self.ayanamsa_spin.setRange(0, 100)
-        self.ayanamsa_spin.setValue(98)
-        basic_form.addRow("Ayanamsa:", self.ayanamsa_spin)
+        self.ayanamsa_combo = QComboBox()
+        from libaditya.constants import ayanamsa_name
+        for code in list(range(98, 102)) + list(range(0, 47)):
+            self.ayanamsa_combo.addItem(f"{code} — {ayanamsa_name(code)}", code)
+        self.ayanamsa_combo.setCurrentIndex(0)  # 98 — Dhruva GC mid-Mula Equatorial
+        basic_form.addRow("Ayanamsa:", self.ayanamsa_combo)
 
         self.hsys_combo = QComboBox()
         self.hsys_combo.addItems(
@@ -298,11 +297,12 @@ class LeftPanel(QWidget):
         cot_form.addRow("Planet Order:", self.cot_planet_order_combo)
 
         calc_layout.addWidget(cot_group)
-        calc_layout.addStretch()
 
         calc_calc_button = QPushButton("Calculate")
         calc_calc_button.clicked.connect(self._on_calculate)
         calc_layout.addWidget(calc_calc_button)
+
+        calc_layout.addStretch()
 
         self.stack.addWidget(calc_page)
 
@@ -504,6 +504,16 @@ class LeftPanel(QWidget):
             self._font_size = max(10, min(28, self._font_size + delta))
         self.setStyleSheet(self._make_style(self._font_size))
 
+    def _ayanamsa_value(self):
+        """Get the current ayanamsa code from the combo box."""
+        return self.ayanamsa_combo.currentData()
+
+    def _set_ayanamsa_value(self, code):
+        """Set the ayanamsa combo to the given code."""
+        idx = self.ayanamsa_combo.findData(code)
+        if idx >= 0:
+            self.ayanamsa_combo.setCurrentIndex(idx)
+
     def _set_now(self):
         """Set date/time to current moment."""
         now = QDateTime.currentDateTime()
@@ -554,7 +564,7 @@ class LeftPanel(QWidget):
             timeJD=jd,
             location=location,
             sysflg=sysflg,
-            ayanamsa=self.ayanamsa_spin.value(),
+            ayanamsa=self._ayanamsa_value(),
             hsys=self.hsys_combo.currentText()[0],
             circle=circle,
             sign_names=sign_names,
@@ -584,7 +594,7 @@ class LeftPanel(QWidget):
             self.lat_spin.value(),
             self.long_spin.value(),
             self.zodiac_combo.currentText(),
-            self.ayanamsa_spin.value(),
+            self._ayanamsa_value(),
             self.hsys_combo.currentText(),
             self.rashi_temp_friend_check.isChecked(),
             self.rashi_aspects_combo.currentText(),
@@ -601,7 +611,7 @@ class LeftPanel(QWidget):
             "lat": self.lat_spin.value(),
             "lon": self.long_spin.value(),
             "zodiac": self.zodiac_combo.currentText(),
-            "ayanamsa": self.ayanamsa_spin.value(),
+            "ayanamsa": self._ayanamsa_value(),
             "hsys": self.hsys_combo.currentText(),
         }
 
@@ -617,9 +627,9 @@ class LeftPanel(QWidget):
         self.zodiac_combo.blockSignals(True)
         self.zodiac_combo.setCurrentText(state.get("zodiac", "Aditya"))
         self.zodiac_combo.blockSignals(False)
-        self.ayanamsa_spin.blockSignals(True)
-        self.ayanamsa_spin.setValue(state.get("ayanamsa", 98))
-        self.ayanamsa_spin.blockSignals(False)
+        self.ayanamsa_combo.blockSignals(True)
+        self._set_ayanamsa_value(state.get("ayanamsa", 98))
+        self.ayanamsa_combo.blockSignals(False)
         self.hsys_combo.blockSignals(True)
         self.hsys_combo.setCurrentText(state.get("hsys", "C — Campanus"))
         self.hsys_combo.blockSignals(False)
@@ -776,7 +786,7 @@ class LeftPanel(QWidget):
         return {
             # Chart Info
             "zodiac": self.zodiac_combo.currentText(),
-            "ayanamsa": self.ayanamsa_spin.value(),
+            "ayanamsa": self._ayanamsa_value(),
             "hsys": self.hsys_combo.currentText(),
             # Jaimini
             "rashi_temp_friend": self.rashi_temp_friend_check.isChecked(),
@@ -799,7 +809,7 @@ class LeftPanel(QWidget):
         """Restore calc + display options without triggering signals."""
         # Block signals to avoid cascading recalculations
         widgets = [
-            self.zodiac_combo, self.ayanamsa_spin, self.hsys_combo,
+            self.zodiac_combo, self.ayanamsa_combo, self.hsys_combo,
             self.rashi_temp_friend_check, self.rashi_aspects_combo,
             self.hd_gate_one_spin,
             self.cot_savana_day_check, self.cot_planet_order_combo,
@@ -812,7 +822,7 @@ class LeftPanel(QWidget):
             w.blockSignals(True)
 
         self.zodiac_combo.setCurrentText(state.get("zodiac", "Aditya"))
-        self.ayanamsa_spin.setValue(state.get("ayanamsa", 98))
+        self._set_ayanamsa_value(state.get("ayanamsa", 98))
         self.hsys_combo.setCurrentText(state.get("hsys", "C — Campanus"))
         self.rashi_temp_friend_check.setChecked(state.get("rashi_temp_friend", True))
         self.rashi_aspects_combo.setCurrentText(state.get("rashi_aspects", "quadrant"))

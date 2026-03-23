@@ -8,7 +8,6 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QFont, QPainter, QPen, QColor
 
-from gandiva.glyphs import PLANET_GLYPHS
 from gandiva.themes import get_theme, DEFAULT_THEME
 
 _KARAKA_ABBREVS = ["AK", "AmK", "BK", "MK", "PuK", "GK", "DK"]

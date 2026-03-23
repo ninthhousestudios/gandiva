@@ -9,7 +9,6 @@ from PyQt6.QtGui import QColor
 
 from gandiva.info_widgets.base import InfoWidget
 from gandiva.renderers import CHART_STYLES
-from gandiva.widgets.chart_panel import _VargaAsChart
 
 
 MINI_SIZE = 380
@@ -111,6 +110,7 @@ class MiniVargaWidget(InfoWidget):
                 self._renderer.update_from_chart(self._chart)
             else:
                 varga = self._chart.varga(self._varga_code)
+                from gandiva.widgets.chart_panel import _VargaAsChart
                 self._renderer.update_from_chart(
                     _VargaAsChart(varga, self._chart.context)
                 )

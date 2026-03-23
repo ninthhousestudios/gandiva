@@ -8,8 +8,8 @@ Usage:
     draw_glyph(painter, PLANET_GLYPHS["Sun"], cx, cy, size=20, color=QColor(...))
 """
 
-from PyQt6.QtCore import QRectF, QByteArray, Qt
-from PyQt6.QtGui import QPainter, QColor, QPen
+from PyQt6.QtCore import QRectF, QByteArray
+from PyQt6.QtGui import QPainter, QColor
 from PyQt6.QtSvg import QSvgRenderer
 
 

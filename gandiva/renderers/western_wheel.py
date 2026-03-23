@@ -1,12 +1,11 @@
 """Western wheel chart renderer — QGraphicsObject subclass of ChartRenderer."""
 
 import math
-from collections import defaultdict
 
 from PyQt6.QtWidgets import QToolTip, QGraphicsSceneMouseEvent, QGraphicsSceneHoverEvent
 from PyQt6.QtCore import Qt, QPointF, QRectF
 from PyQt6.QtGui import (
-    QPainter, QPen, QBrush, QColor, QFont, QPainterPath, QPixmap,
+    QPen, QBrush, QFont, QPainterPath, QPixmap,
     QFontMetricsF,
 )
 
@@ -14,8 +13,7 @@ from libaditya.objects.context import Circle
 from libaditya import constants as const
 
 from gandiva.glyphs import PLANET_GLYPHS, SIGN_GLYPHS
-from gandiva.glyph_renderer import draw_glyph, clear_cache
-from gandiva.themes import get_theme, DEFAULT_THEME
+from gandiva.glyph_renderer import draw_glyph
 from gandiva.renderers.base import ChartRenderer
 from gandiva.assets import CENTER_IMAGE
 

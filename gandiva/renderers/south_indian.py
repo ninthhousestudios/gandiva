@@ -9,7 +9,7 @@ import math
 
 from PyQt6.QtCore import Qt, QPointF, QRectF
 from PyQt6.QtGui import (
-    QPainter, QPen, QBrush, QColor, QFont, QFontMetricsF,
+    QPen, QBrush, QFont, QFontMetricsF,
     QPixmap, QPainterPath,
 )
 from PyQt6.QtWidgets import QToolTip, QGraphicsSceneHoverEvent

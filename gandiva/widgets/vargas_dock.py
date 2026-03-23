@@ -1,11 +1,10 @@
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QTreeWidget, QTreeWidgetItem,
-    QLabel, QPushButton, QSpinBox, QHeaderView,
+    QLabel, QPushButton, QSpinBox,
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QSize
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QPixmap, QPainter
 
-from libaditya.calc.varga import Varga
 from gandiva.widgets.chart_panel import varga_display_name
 
 

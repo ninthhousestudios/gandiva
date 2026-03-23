@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QComboBox, QStackedWidget,
     QTreeWidget, QTreeWidgetItem, QHeaderView,
 )
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import QSize
 
 
 _YOGA_CATEGORIES = [

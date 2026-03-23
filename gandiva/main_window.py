@@ -15,7 +15,7 @@ from gandiva.widgets.left_panel import LeftPanel
 from gandiva.widgets.chart_area import ChartArea
 from gandiva.widgets.chart_panel import ChartPanel, varga_display_name
 from gandiva.widgets.data_panels import DATA_PANELS
-from gandiva.themes import get_theme, DEFAULT_THEME, make_app_stylesheet
+from gandiva.themes import get_theme, make_app_stylesheet
 
 
 class MainWindow(QMainWindow):

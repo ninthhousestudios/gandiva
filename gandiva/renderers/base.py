@@ -1,7 +1,5 @@
 """Abstract base class for chart renderers."""
 
-import math
-
 from PyQt6.QtCore import QRectF, pyqtSignal
 from PyQt6.QtWidgets import QGraphicsObject
 
