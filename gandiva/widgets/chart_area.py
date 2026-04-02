@@ -119,8 +119,13 @@ class ChartArea(QMainWindow):
         self._primary_panel.set_chart(chart, self._primary_panel.varga_number)
         if self._secondary_panel is not None:
             self._secondary_panel.set_chart(chart, self._secondary_panel.varga_number)
+        varga_number = self.active_panel.varga_number
         for widget in self._data_panels.values():
-            widget.update_from_chart(chart)
+            if hasattr(widget, 'update_from_chart'):
+                try:
+                    widget.update_from_chart(chart, varga_number=varga_number)
+                except TypeError:
+                    widget.update_from_chart(chart)
 
     def set_chart_style(self, style_name: str):
         """Change chart renderer style on all panels."""
@@ -180,6 +185,12 @@ class ChartArea(QMainWindow):
         varga_number = self._varga_tabs[index]
         if self._chart is not None:
             self.active_panel.set_chart(self._chart, varga_number)
+            for widget in self._data_panels.values():
+                if hasattr(widget, 'update_from_chart'):
+                    try:
+                        widget.update_from_chart(self._chart, varga_number=varga_number)
+                    except TypeError:
+                        widget.update_from_chart(self._chart)
 
     def _on_varga_tab_close(self, index: int):
         if index == 0:
@@ -193,6 +204,14 @@ class ChartArea(QMainWindow):
         ):
             self.active_panel.set_chart(self._chart, None)
             self._varga_tab_bar.setCurrentIndex(0)
+            # Refresh data panels back to rashi
+            if self._chart is not None:
+                for widget in self._data_panels.values():
+                    if hasattr(widget, 'update_from_chart'):
+                        try:
+                            widget.update_from_chart(self._chart, varga_number=None)
+                        except TypeError:
+                            widget.update_from_chart(self._chart)
         self._update_tab_bar_visibility()
 
     # ── Side-by-side ──────────────────────────────────────────────────────────

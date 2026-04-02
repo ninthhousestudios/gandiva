@@ -89,10 +89,22 @@ class SouthIndianRenderer(ChartRenderer):
                     sign_num = sign_num % 12 + 1
                 retro = planet.retrograde()
                 dig = planet.dignity()
+                amsha_str = ""
+                deity_str = ""
+                if planet.amsha() != 1:
+                    try:
+                        amsha_str = f"Amsha:      {planet.amsha()}"
+                        deity = planet.deity()
+                        if deity and deity != "none":
+                            deity_str = f"Deity:      {deity}"
+                    except Exception:
+                        pass
                 info = "\n".join(filter(None, [
                     f"{pname}" + ("  (R)" if retro else ""),
                     f"Longitude:  {_fmt_lon(planet)}",
                     f"Sign:       {planet.sign_name()}",
+                    amsha_str,
+                    deity_str,
                     f"Dignity:    {dig}" if dig else "",
                     f"Speed:      {planet.longitude_speed():.4f}°/day",
                 ]))

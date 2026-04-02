@@ -380,10 +380,14 @@ class PlanetsWidget(QWidget):
 
         self._popped_out.discard(planet_name)
 
-    def update_from_chart(self, chart):
+    def update_from_chart(self, chart, varga_number=None):
         self._last_chart = chart
-        rashi = chart.rashi()
-        planets = dict(rashi.planets().items())
+        self._last_varga_number = varga_number
+        if varga_number is not None:
+            source = chart.varga(varga_number)
+        else:
+            source = chart.rashi()
+        planets = dict(source.planets().items())
 
         # Update karaka summary line
         try:
@@ -423,6 +427,14 @@ class PlanetsWidget(QWidget):
                 if dig:
                     QTreeWidgetItem(basic, ["Dignity", dig])
                 QTreeWidgetItem(basic, ["Nakshatra", planet.nakshatra_name()])
+                if varga_number is not None and planet.amsha() != 1:
+                    try:
+                        QTreeWidgetItem(basic, ["Amsha", str(planet.amsha())])
+                        deity = planet.deity()
+                        if deity and deity != "none":
+                            QTreeWidgetItem(basic, ["Deity", deity])
+                    except Exception:
+                        pass
                 try:
                     c = planet.constellation()
                     if c and c != "n/a":
@@ -589,8 +601,11 @@ class CuspsWidget(QWidget):
         self.cusp_table.verticalHeader().setVisible(False)
         layout.addWidget(self.cusp_table)
 
-    def update_from_chart(self, chart):
-        cusps = chart.rashi().cusps()
+    def update_from_chart(self, chart, varga_number=None):
+        if varga_number is not None:
+            cusps = chart.varga(varga_number).cusps()
+        else:
+            cusps = chart.rashi().cusps()
         rows = []
         for cusp in cusps:
             try:
