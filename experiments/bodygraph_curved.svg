@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="500" height="500" viewBox="0 0 500 500">
+<defs>
+</defs>
+<rect x="0" y="0" width="500" height="500" fill="#1a1a2e" />
+<path d="M234,45 L234,80" stroke="#556" stroke-width="5" stroke-linecap="round" />
+<path d="M250,45 L250,80" stroke="#556" stroke-width="5" stroke-linecap="round" />
+<path d="M265,45 L265,80" stroke="#556" stroke-width="5" stroke-linecap="round" />
+<path d="M234,95 L234,150" stroke="#556" stroke-width="5" stroke-linecap="round" />
+<path d="M250,110 L250,150" stroke="#556" stroke-width="5" stroke-linecap="round" />
+<path d="M265,95 L265,150" stroke="#556" stroke-width="5" stroke-linecap="round" />
+<path d="M 221,163 C 190,180 140,200 160,230" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 221,178 C 195,195 150,210 180,230" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 268,140 C 300,160 340,200 350,240" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 268,150 C 310,200 360,280 330,245" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 275,190 C 285,200 290,215 295,228" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M234,195 L234,242" stroke="#556" stroke-width="5" stroke-linecap="round" />
+<path d="M250,195 L250,230" stroke="#556" stroke-width="5" stroke-linecap="round" />
+<path d="M265,195 L265,242" stroke="#556" stroke-width="5" stroke-linecap="round" />
+<path d="M 285,257 C 290,260 295,268 297,270" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M234,277 L234,340" stroke="#556" stroke-width="5" stroke-linecap="round" />
+<path d="M250,290 L250,340" stroke="#556" stroke-width="5" stroke-linecap="round" />
+<path d="M265,277 L265,340" stroke="#556" stroke-width="5" stroke-linecap="round" />
+<path d="M 340,322 C 345,340 355,355 360,362" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 140,350 C 170,340 200,330 220,323" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 268,372 C 280,371 295,371 307,371" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 222,370 C 210,370 200,370 195,370" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M234,385 L234,430" stroke="#556" stroke-width="5" stroke-linecap="round" />
+<path d="M250,385 L250,430" stroke="#556" stroke-width="5" stroke-linecap="round" />
+<path d="M265,385 L265,430" stroke="#556" stroke-width="5" stroke-linecap="round" />
+<path d="M 127,365 C 140,375 160,395 180,410" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 117,378 C 130,395 150,415 172,425" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 108,390 C 120,405 140,425 163,438" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 330,410 C 340,420 355,435 363,378" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 335,429 C 350,420 365,410 378,384" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 343,445 C 360,440 385,420 398,392" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 222,350 C 190,340 160,320 120,353" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 212,258 C 190,270 170,290 140,310" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 221,178 C 195,200 170,250 140,310" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 212,258 C 190,250 160,245 180,230" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M 212,258 C 200,250 195,240 180,230" stroke="#556" stroke-width="5" fill="none" stroke-linecap="round" />
+<path d="M210,50 L250,10 L290,50 L210,50" stroke="#aaa" fill="#fff3" />
+<path d="M210,70 L250,120 L290,70 L210,70" stroke="#aaa" fill="#fff3" />
+<rect x="220" y="140" width="60" height="60" rx="5" stroke="#aaa" fill="#fff3" />
+<rect x="220" y="210" width="60" height="60" rx="5" stroke="#aaa" fill="#fff3" transform="rotate(45,230,250)" />
+<rect x="220" y="330" width="60" height="60" rx="5" stroke="#aaa" fill="#fff3" />
+<rect x="220" y="420" width="60" height="60" rx="5" stroke="#aaa" fill="#fff3" />
+<path d="M100,400 L100,330 L170,365 L100,400" stroke="#aaa" fill="#fff3" />
+<path d="M400,400 L400,330 L330,370 L400,400" stroke="#aaa" fill="#fff3" />
+<path d="M295,300 L315,255 L360,290 L295,300" stroke="#aaa" fill="#fff3" />
+<text x="245" y="230" font-size="10" fill="#ccc">01</text>
+<text x="245" y="290" font-size="10" fill="#ccc">02</text>
+<text x="245" y="385" font-size="10" fill="#ccc">03</text>
+<text x="260" y="80" font-size="10" fill="#ccc">04</text>
+<text x="230" y="340" font-size="10" fill="#ccc">05</text>
+<text x="340" y="372" font-size="10" fill="#ccc">06</text>
+<text x="230" y="242" font-size="10" fill="#ccc">07</text>
+<text x="245" y="195" font-size="10" fill="#ccc">08</text>
+<text x="260" y="385" font-size="10" fill="#ccc">09</text>
+<text x="212" y="260" font-size="10" fill="#ccc">10</text>
+<text x="260" y="95" font-size="10" fill="#ccc">11</text>
+<text x="268" y="173" font-size="10" fill="#ccc">12</text>
+<text x="260" y="242" font-size="10" fill="#ccc">13</text>
+<text x="245" y="340" font-size="10" fill="#ccc">14</text>
+<text x="230" y="277" font-size="10" fill="#ccc">15</text>
+<text x="221" y="163" font-size="10" fill="#ccc">16</text>
+<text x="230" y="95" font-size="10" fill="#ccc">17</text>
+<text x="102" y="390" font-size="10" fill="#ccc">18</text>
+<text x="268" y="445" font-size="10" fill="#ccc">19</text>
+<text x="221" y="178" font-size="10" fill="#ccc">20</text>
+<text x="313" y="268" font-size="10" fill="#ccc">21</text>
+<text x="372" y="354" font-size="10" fill="#ccc">22</text>
+<text x="245" y="150" font-size="10" fill="#ccc">23</text>
+<text x="245" y="80" font-size="10" fill="#ccc">24</text>
+<text x="278" y="260" font-size="10" fill="#ccc">25</text>
+<text x="302" y="295" font-size="10" fill="#ccc">26</text>
+<text x="222" y="375" font-size="10" fill="#ccc">27</text>
+<text x="117" y="382" font-size="10" fill="#ccc">28</text>
+<text x="260" y="340" font-size="10" fill="#ccc">29</text>
+<text x="388" y="392" font-size="10" fill="#ccc">30</text>
+<text x="230" y="195" font-size="10" fill="#ccc">31</text>
+<text x="132" y="374" font-size="10" fill="#ccc">32</text>
+<text x="260" y="195" font-size="10" fill="#ccc">33</text>
+<text x="222" y="355" font-size="10" fill="#ccc">34</text>
+<text x="268" y="160" font-size="10" fill="#ccc">35</text>
+<text x="388" y="345" font-size="10" fill="#ccc">36</text>
+<text x="357" y="362" font-size="10" fill="#ccc">37</text>
+<text x="222" y="460" font-size="10" fill="#ccc">38</text>
+<text x="268" y="460" font-size="10" fill="#ccc">39</text>
+<text x="320" y="293" font-size="10" fill="#ccc">40</text>
+<text x="268" y="475" font-size="10" fill="#ccc">41</text>
+<text x="230" y="385" font-size="10" fill="#ccc">42</text>
+<text x="245" y="110" font-size="10" fill="#ccc">43</text>
+<text x="132" y="361" font-size="10" fill="#ccc">44</text>
+<text x="268" y="188" font-size="10" fill="#ccc">45</text>
+<text x="260" y="277" font-size="10" fill="#ccc">46</text>
+<text x="230" y="80" font-size="10" fill="#ccc">47</text>
+<text x="102" y="345" font-size="10" fill="#ccc">48</text>
+<text x="357" y="378" font-size="10" fill="#ccc">49</text>
+<text x="150" y="368" font-size="10" fill="#ccc">50</text>
+<text x="307" y="282" font-size="10" fill="#ccc">51</text>
+<text x="260" y="430" font-size="10" fill="#ccc">52</text>
+<text x="230" y="430" font-size="10" fill="#ccc">53</text>
+<text x="222" y="445" font-size="10" fill="#ccc">54</text>
+<text x="372" y="384" font-size="10" fill="#ccc">55</text>
+<text x="260" y="150" font-size="10" fill="#ccc">56</text>
+<text x="117" y="353" font-size="10" fill="#ccc">57</text>
+<text x="222" y="475" font-size="10" fill="#ccc">58</text>
+<text x="268" y="375" font-size="10" fill="#ccc">59</text>
+<text x="245" y="430" font-size="10" fill="#ccc">60</text>
+<text x="245" y="45" font-size="10" fill="#ccc">61</text>
+<text x="230" y="150" font-size="10" fill="#ccc">62</text>
+<text x="260" y="45" font-size="10" fill="#ccc">63</text>
+<text x="230" y="45" font-size="10" fill="#ccc">64</text>
+</svg>

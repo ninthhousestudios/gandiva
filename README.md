@@ -4,6 +4,9 @@ A PyQt6 desktop application for Jyotish (Vedic astrology), built on [libaditya](
 
 Gandiva is a presentation layer — all astronomical and astrological computation is handled by libaditya. Gandiva provides an interactive, dockable-panel interface for exploring charts, vargas, dashas, and more.
 
+NOTE: binaries for Windows and MacOS availabe here:
+[Gandiva binaries](https://github.com/ninthhousestudios/gandiva/releases/tag/v1.0.0)
+
 NOTE: Gandiva is 100% vibe-coded software. I can sort of tell; it's pretty slow and
 heavy. In any case, I wrote ```libaditya``` by hand (though it now has calculation
 additions from Claude) but the idea of making a GUI for it was very overwhelming and not

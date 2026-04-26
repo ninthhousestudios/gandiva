@@ -86,7 +86,7 @@ wheels = [
 
 [[package]]
 name = "libaditya"
-version = "0.3.3"
+version = "0.3.4"
 source = { directory = "../libaditya" }
 dependencies = [
     { name = "drawsvg" },

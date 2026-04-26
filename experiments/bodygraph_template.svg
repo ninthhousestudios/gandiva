@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="500" height="500" viewBox="0 0 500 500">
+<defs>
+</defs>
+<rect x="0" y="0" width="500" height="500" fill="#1a1a2e" />
+<path d="M234,45 L234,80" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="230" y="41" font-size="7" fill="#888">64</text>
+<text x="230" y="88" font-size="7" fill="#888">47</text>
+<path d="M250,45 L250,80" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="246" y="41" font-size="7" fill="#888">61</text>
+<text x="246" y="88" font-size="7" fill="#888">24</text>
+<path d="M265,45 L265,80" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="261" y="41" font-size="7" fill="#888">63</text>
+<text x="261" y="88" font-size="7" fill="#888">4</text>
+<path d="M234,95 L234,150" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="230" y="91" font-size="7" fill="#888">17</text>
+<text x="230" y="158" font-size="7" fill="#888">62</text>
+<path d="M250,110 L250,150" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="246" y="106" font-size="7" fill="#888">43</text>
+<text x="246" y="158" font-size="7" fill="#888">23</text>
+<path d="M265,95 L265,150" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="261" y="91" font-size="7" fill="#888">11</text>
+<text x="261" y="158" font-size="7" fill="#888">56</text>
+<path d="M221,163 L105,345" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="217" y="159" font-size="7" fill="#888">16</text>
+<text x="101" y="353" font-size="7" fill="#888">48</text>
+<path d="M221,178 L120,353" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="217" y="174" font-size="7" fill="#888">20</text>
+<text x="116" y="361" font-size="7" fill="#888">57</text>
+<path d="M268,140 L393,340" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="264" y="136" font-size="7" fill="#888">35</text>
+<text x="389" y="348" font-size="7" fill="#888">36</text>
+<path d="M330,245 L380,352" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="326" y="241" font-size="7" fill="#888">12</text>
+<text x="376" y="360" font-size="7" fill="#888">22</text>
+<path d="M275,190 L320,273" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="271" y="186" font-size="7" fill="#888">45</text>
+<text x="316" y="281" font-size="7" fill="#888">21</text>
+<path d="M234,195 L234,242" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="230" y="191" font-size="7" fill="#888">31</text>
+<text x="230" y="250" font-size="7" fill="#888">7</text>
+<path d="M250,195 L250,230" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="246" y="191" font-size="7" fill="#888">8</text>
+<text x="246" y="238" font-size="7" fill="#888">1</text>
+<path d="M265,195 L265,242" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="261" y="191" font-size="7" fill="#888">33</text>
+<text x="261" y="250" font-size="7" fill="#888">13</text>
+<path d="M285,257 L307,282" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="281" y="253" font-size="7" fill="#888">25</text>
+<text x="303" y="290" font-size="7" fill="#888">51</text>
+<path d="M234,277 L234,340" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="230" y="273" font-size="7" fill="#888">15</text>
+<text x="230" y="348" font-size="7" fill="#888">5</text>
+<path d="M250,290 L250,340" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="246" y="286" font-size="7" fill="#888">2</text>
+<text x="246" y="348" font-size="7" fill="#888">14</text>
+<path d="M265,277 L265,340" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="261" y="273" font-size="7" fill="#888">46</text>
+<text x="261" y="348" font-size="7" fill="#888">29</text>
+<path d="M360,362 L325,293" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="356" y="358" font-size="7" fill="#888">37</text>
+<text x="321" y="301" font-size="7" fill="#888">40</text>
+<path d="M140,350 L220,323" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="136" y="346" font-size="7" fill="#888">44</text>
+<text x="216" y="331" font-size="7" fill="#888">26</text>
+<path d="M268,372 L340,369" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="264" y="368" font-size="7" fill="#888">59</text>
+<text x="336" y="377" font-size="7" fill="#888">6</text>
+<path d="M222,370 L150,362" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="218" y="366" font-size="7" fill="#888">27</text>
+<text x="146" y="370" font-size="7" fill="#888">50</text>
+<path d="M234,385 L234,430" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="230" y="381" font-size="7" fill="#888">42</text>
+<text x="230" y="438" font-size="7" fill="#888">53</text>
+<path d="M250,385 L250,430" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="246" y="381" font-size="7" fill="#888">3</text>
+<text x="246" y="438" font-size="7" fill="#888">60</text>
+<path d="M265,385 L265,430" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="261" y="381" font-size="7" fill="#888">9</text>
+<text x="261" y="438" font-size="7" fill="#888">52</text>
+<path d="M127,365 L222,445" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="123" y="361" font-size="7" fill="#888">32</text>
+<text x="218" y="453" font-size="7" fill="#888">54</text>
+<path d="M117,378 L222,460" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="113" y="374" font-size="7" fill="#888">28</text>
+<text x="218" y="468" font-size="7" fill="#888">38</text>
+<path d="M108,390 L222,475" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="104" y="386" font-size="7" fill="#888">18</text>
+<text x="218" y="483" font-size="7" fill="#888">58</text>
+<path d="M363,378 L268,450" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="359" y="374" font-size="7" fill="#888">49</text>
+<text x="264" y="458" font-size="7" fill="#888">19</text>
+<path d="M378,384 L268,465" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="374" y="380" font-size="7" fill="#888">55</text>
+<text x="264" y="473" font-size="7" fill="#888">39</text>
+<path d="M398,392 L268,478" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="394" y="388" font-size="7" fill="#888">30</text>
+<text x="264" y="486" font-size="7" fill="#888">41</text>
+<path d="M222,350 L120,353" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="218" y="346" font-size="7" fill="#888">34</text>
+<text x="116" y="361" font-size="7" fill="#888">57</text>
+<path d="M222,350 L212,258" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="218" y="346" font-size="7" fill="#888">34</text>
+<text x="208" y="266" font-size="7" fill="#888">10</text>
+<path d="M222,350 L221,178" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="218" y="346" font-size="7" fill="#888">34</text>
+<text x="217" y="186" font-size="7" fill="#888">20</text>
+<path d="M120,353 L212,258" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="116" y="349" font-size="7" fill="#888">57</text>
+<text x="208" y="266" font-size="7" fill="#888">10</text>
+<path d="M212,258 L221,178" stroke="#444" stroke-width="3" stroke-linecap="round" />
+<text x="208" y="254" font-size="7" fill="#888">10</text>
+<text x="217" y="186" font-size="7" fill="#888">20</text>
+<path d="M210,50 L250,10 L290,50 L210,50" stroke="#666" fill="#333" />
+<path d="M210,70 L250,120 L290,70 L210,70" stroke="#666" fill="#333" />
+<rect x="220" y="140" width="60" height="60" rx="5" stroke="#666" fill="#333" />
+<rect x="220" y="210" width="60" height="60" rx="5" stroke="#666" fill="#333" transform="rotate(45,230,250)" />
+<rect x="220" y="330" width="60" height="60" rx="5" stroke="#666" fill="#333" />
+<rect x="220" y="420" width="60" height="60" rx="5" stroke="#666" fill="#333" />
+<path d="M100,400 L100,330 L170,365 L100,400" stroke="#666" fill="#333" />
+<path d="M400,400 L400,330 L330,370 L400,400" stroke="#666" fill="#333" />
+<path d="M295,300 L315,255 L360,290 L295,300" stroke="#666" fill="#333" />
+</svg>
