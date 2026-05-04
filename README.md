@@ -7,33 +7,6 @@ Gandiva is a presentation layer — all astronomical and astrological computatio
 NOTE: binaries for Windows and MacOS availabe here:
 [Gandiva binaries](https://github.com/ninthhousestudios/gandiva/releases/tag/v1.0.0)
 
-NOTE: Gandiva is 100% vibe-coded software. I can sort of tell; it's pretty slow and
-heavy. In any case, I wrote ```libaditya``` by hand (though it now has calculation
-additions from Claude) but the idea of making a GUI for it was very overwhelming and not
-very interesting.
-
-This is of course where Claude comes in. I made this in about three days of working
-time. I'm not going to say it is a great piece of software and that it is production
-ready - I'm not saying that, and I'm not suggesting you switch from your regular
-software.
-
-But, this provides an interesting opportunity. For me, I have a hard time designing
-something completely. I need to see it, use it, to really know how I want it to be. But
-when building something is intensive and difficult, then it is difficult to see it...but
-with Claude, I was able to just do this quickly and see what it is like.
-
-I see this as an opportunity to experiment, especially with the UX/UI design.
-Since it is relatively easier to add, subtract, change things, then you just can and see
-what it's like. At some point, it could be that I want to make a proper piece of
-software. This will help a lot because then I will have a much clearer idea of what I
-want and how to accomplish it.
-
-Lastly, you can modify Gandiva yourself if you want to. An agent, Claude, Codex, etc.
-should be able to download and install Gandiva, so then you can try modifying it in a
-way that you think is interesting.
-
-I'd be curious to hear what you like and dislike about the setup of this software. What
-would you want? How would you design your software?
 
 ## Features
 
@@ -54,18 +27,19 @@ would you want? How would you design your software?
 - [uv](https://docs.astral.sh/uv/) (recommended package manager)
 - [libaditya](../libaditya) — the astrological calculation library (linked as a local dependency)
 
-## Installation
+## Installation for Linux (for MacOS and Windows, download binaries from github; link
+above)
 
 ```bash
-git clone <repo-url>
+git clone https://gitlab.com/ninthhouse/gandiva
+git clone https://gitlab.com/ninthhouse/libaditya
 cd gandiva
 
-# Create a virtual environment and install dependencies
-uv venv && source .venv/bin/activate
-uv add . --dev
+uv sync
+uv run gandiva/app.py
 ```
 
-libaditya is expected to be in a sibling directory (`../libaditya`). See `pyproject.toml` for the source link.
+libaditya is expected to be in a sibling directory (`../libaditya`).
 
 ## Usage
 
