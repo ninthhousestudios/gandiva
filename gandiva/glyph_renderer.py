@@ -8,9 +8,30 @@ Usage:
     draw_glyph(painter, PLANET_GLYPHS["Sun"], cx, cy, size=20, color=QColor(...))
 """
 
+from pathlib import Path
+
 from PySide6.QtCore import QRectF, QByteArray
 from PySide6.QtGui import QPainter, QColor
 from PySide6.QtSvg import QSvgRenderer
+
+_ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
+
+_ADITYA_SVG_FILES = [
+    "dhata.svg",
+    "aryama.svg",
+    "mitra.svg",
+    "varuna.svg",
+    "indra.svg",
+    "vivasvan.svg",
+    "tvashta.svg",
+    "vishnu.svg",
+    "amzu.svg",
+    "bhaga.svg",
+    "pushan.svg",
+    "parjanya.svg",
+]
+
+_PLACEHOLDER_COLOR = "#e0d8c8"
 
 
 _SVG_COMMANDS = set("MmZzLlHhVvCcSsQqTtAa")
@@ -46,8 +67,8 @@ def _make_svg(glyph: dict, color: str = "#000000", stroke_width: float = 1.5) ->
         '<?xml version="1.0"?>'
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 10 80 80" '
         'width="80" height="80">'
-        f'{paths_svg}'
-        '</svg>'
+        f"{paths_svg}"
+        "</svg>"
     )
     return svg.encode("utf-8")
 
@@ -56,7 +77,9 @@ def _make_svg(glyph: dict, color: str = "#000000", stroke_width: float = 1.5) ->
 _cache: dict[tuple, QSvgRenderer] = {}
 
 
-def _get_renderer(glyph: dict, color: QColor, stroke_width: float = 1.5) -> QSvgRenderer:
+def _get_renderer(
+    glyph: dict, color: QColor, stroke_width: float = 1.5
+) -> QSvgRenderer:
     key = (id(glyph), color.name(), stroke_width)
     if key not in _cache:
         svg_bytes = _make_svg(glyph, color.name(), stroke_width)
@@ -81,6 +104,33 @@ def draw_glyph(
     renderer.render(painter, rect)
 
 
+_aditya_cache: dict[tuple, QSvgRenderer] = {}
+
+
+def _get_aditya_renderer(index: int, color: QColor) -> QSvgRenderer:
+    key = (index, color.name())
+    if key not in _aditya_cache:
+        svg_text = (_ASSETS_DIR / _ADITYA_SVG_FILES[index]).read_text()
+        svg_text = svg_text.replace(_PLACEHOLDER_COLOR, color.name())
+        _aditya_cache[key] = QSvgRenderer(QByteArray(svg_text.encode("utf-8")))
+    return _aditya_cache[key]
+
+
+def draw_aditya_glyph(
+    painter: QPainter,
+    index: int,
+    cx: float,
+    cy: float,
+    size: float = 20.0,
+    color: QColor = QColor(0, 0, 0),
+):
+    renderer = _get_aditya_renderer(index, color)
+    half = size / 2
+    rect = QRectF(cx - half, cy - half, size, size)
+    renderer.render(painter, rect)
+
+
 def clear_cache():
     """Clear the renderer cache (call after color/theme changes)."""
     _cache.clear()
+    _aditya_cache.clear()

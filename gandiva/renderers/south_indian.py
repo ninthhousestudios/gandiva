@@ -9,8 +9,12 @@ import math
 
 from PySide6.QtCore import Qt, QPointF, QRectF
 from PySide6.QtGui import (
-    QPen, QBrush, QFont, QFontMetricsF,
-    QPixmap, QPainterPath,
+    QPen,
+    QBrush,
+    QFont,
+    QFontMetricsF,
+    QPixmap,
+    QPainterPath,
 )
 from PySide6.QtWidgets import QToolTip, QGraphicsSceneHoverEvent
 
@@ -18,7 +22,7 @@ from libaditya.objects.context import Circle
 from libaditya import constants as const
 
 from gandiva.glyphs import PLANET_GLYPHS, SIGN_GLYPHS
-from gandiva.glyph_renderer import draw_glyph
+from gandiva.glyph_renderer import draw_glyph, draw_aditya_glyph
 from gandiva.renderers.base import ChartRenderer
 from gandiva.assets import CENTER_IMAGE
 
@@ -27,13 +31,22 @@ def _fmt_lon(obj) -> str:
     """Format a planet or cusp longitude — works for both rashi and vargas."""
     return obj.longitude()
 
+
 # Fixed grid positions — clockwise from top-left (Pisces).
 # (row, col) → sign number (1-indexed)
 _CELL_SIGNS = [
-    (0, 0, 12), (0, 1,  1), (0, 2,  2), (0, 3,  3),
-    (1, 3,  4),                           (1, 0, 11),
-    (2, 3,  5),                           (2, 0, 10),
-    (3, 3,  6), (3, 2,  7), (3, 1,  8), (3, 0,  9),
+    (0, 0, 12),
+    (0, 1, 1),
+    (0, 2, 2),
+    (0, 3, 3),
+    (1, 3, 4),
+    (1, 0, 11),
+    (2, 3, 5),
+    (2, 0, 10),
+    (3, 3, 6),
+    (3, 2, 7),
+    (3, 1, 8),
+    (3, 0, 9),
 ]
 
 # sign_number → (row, col)
@@ -42,25 +55,34 @@ _SIGN_TO_CELL = {sign: (r, c) for r, c, sign in _CELL_SIGNS}
 SKIP_PLANETS = {"Earth"}
 
 _ROMAN = {
-    1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI",
-    7: "VII", 8: "VIII", 9: "IX", 10: "X", 11: "XI", 12: "XII",
+    1: "I",
+    2: "II",
+    3: "III",
+    4: "IV",
+    5: "V",
+    6: "VI",
+    7: "VII",
+    8: "VIII",
+    9: "IX",
+    10: "X",
+    11: "XI",
+    12: "XII",
 }
 
 HIT_RADIUS = 18
 
 
 class SouthIndianRenderer(ChartRenderer):
-
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setAcceptHoverEvents(True)
         self.asc_sign = 1
         self.is_aditya = True
         self.selected_planet = None
-        self._planet_positions = []   # [(name, x, y, info_str)]
-        self._cusp_positions = []     # [(label, x, y, tip)] filled during paint
-        self._sign_data = {}          # sign_num → [(name, retro, dignity, info_str)]
-        self._cusp_in_sign = {}       # sign_num → cusp_number (1-12)
+        self._planet_positions = []  # [(name, x, y, info_str)]
+        self._cusp_positions = []  # [(label, x, y, tip)] filled during paint
+        self._sign_data = {}  # sign_num → [(name, retro, dignity, info_str)]
+        self._cusp_in_sign = {}  # sign_num → cusp_number (1-12)
         self._center_pixmap = QPixmap(CENTER_IMAGE)
 
     def update_from_chart(self, chart) -> None:
@@ -99,15 +121,20 @@ class SouthIndianRenderer(ChartRenderer):
                             deity_str = f"Deity:      {deity}"
                     except Exception:
                         pass
-                info = "\n".join(filter(None, [
-                    f"{pname}" + ("  (R)" if retro else ""),
-                    f"Longitude:  {_fmt_lon(planet)}",
-                    f"Sign:       {planet.sign_name()}",
-                    amsha_str,
-                    deity_str,
-                    f"Dignity:    {dig}" if dig else "",
-                    f"Speed:      {planet.longitude_speed():.4f}°/day",
-                ]))
+                info = "\n".join(
+                    filter(
+                        None,
+                        [
+                            f"{pname}" + ("  (R)" if retro else ""),
+                            f"Longitude:  {_fmt_lon(planet)}",
+                            f"Sign:       {planet.sign_name()}",
+                            amsha_str,
+                            deity_str,
+                            f"Dignity:    {dig}" if dig else "",
+                            f"Speed:      {planet.longitude_speed():.4f}°/day",
+                        ],
+                    )
+                )
                 self._sign_data.setdefault(sign_num, []).append(
                     (pname, retro, dig, info)
                 )
@@ -126,12 +153,17 @@ class SouthIndianRenderer(ChartRenderer):
                 sign_num = int(ecl / 30) % 12 + 1
                 if self.is_aditya:
                     sign_num = sign_num % 12 + 1
-                tip = "\n".join(filter(None, [
-                    f"Cusp {_ROMAN[i]}  (House {i})",
-                    f"Longitude:  {_fmt_lon(cusp)}",
-                    f"Sign:       {cusp.sign_name()}",
-                    f"Nakshatra:  {cusp.nakshatra_name()}",
-                ]))
+                tip = "\n".join(
+                    filter(
+                        None,
+                        [
+                            f"Cusp {_ROMAN[i]}  (House {i})",
+                            f"Longitude:  {_fmt_lon(cusp)}",
+                            f"Sign:       {cusp.sign_name()}",
+                            f"Nakshatra:  {cusp.nakshatra_name()}",
+                        ],
+                    )
+                )
                 self._cusp_in_sign[sign_num] = (i, tip)
             except Exception:
                 continue
@@ -204,20 +236,23 @@ class SouthIndianRenderer(ChartRenderer):
         t = self._theme
 
         if self.is_aditya:
-            # Aditya mode: small text labels
-            label_font = QFont("Sans", max(5, int(min(cw, ch) * 0.11)))
-            p.setFont(label_font)
-            p.setPen(QPen(t["sign_label"]))
-
+            glyph_size = min(cw, ch) * 0.19
+            margin = glyph_size * 0.55
             for row, col, sign_num in _CELL_SIGNS:
                 rect = self._cell_rect(row, col, x0, y0, cw, ch)
-                label = const.adityas[(sign_num - 1) % 12].upper()
-                text_rect = QRectF(rect.x() + 3, rect.y() + 2,
-                                   rect.width() - 6, label_font.pointSize() * 1.8)
-                halign = Qt.AlignmentFlag.AlignLeft if col <= 1 else Qt.AlignmentFlag.AlignRight
-                p.drawText(text_rect,
-                           int(halign | Qt.AlignmentFlag.AlignTop),
-                           label)
+                if col <= 1:
+                    gx = rect.x() + margin
+                else:
+                    gx = rect.right() - margin
+                gy = rect.y() + margin
+                draw_aditya_glyph(
+                    p,
+                    (sign_num - 1) % 12,
+                    gx,
+                    gy,
+                    size=glyph_size,
+                    color=t["sign_label"],
+                )
         else:
             # Tropical/sidereal: sign glyphs
             glyph_size = min(cw, ch) * 0.50
@@ -232,8 +267,9 @@ class SouthIndianRenderer(ChartRenderer):
                 else:
                     gx = rect.right() - margin
                 gy = rect.y() + margin
-                draw_glyph(p, glyph_data, gx, gy, size=glyph_size,
-                           color=t["sign_label"])
+                draw_glyph(
+                    p, glyph_data, gx, gy, size=glyph_size, color=t["sign_label"]
+                )
 
     def _draw_cusp_numerals(self, p, x0, y0, cw, ch):
         """Draw roman numeral for each cusp, with positions for hover tooltips."""
@@ -257,21 +293,17 @@ class SouthIndianRenderer(ChartRenderer):
             text_h = font.pointSize() * 1.8
             if col <= 1:
                 halign = Qt.AlignmentFlag.AlignRight
-                text_rect = QRectF(rect.x() + 4, rect.y() + 2,
-                                   rect.width() - 8, text_h)
+                text_rect = QRectF(rect.x() + 4, rect.y() + 2, rect.width() - 8, text_h)
                 # Hit position: right side of cell
                 tx = rect.right() - 4 - fm.horizontalAdvance(numeral) / 2
             else:
                 halign = Qt.AlignmentFlag.AlignLeft
-                text_rect = QRectF(rect.x() + 4, rect.y() + 2,
-                                   rect.width() - 8, text_h)
+                text_rect = QRectF(rect.x() + 4, rect.y() + 2, rect.width() - 8, text_h)
                 # Hit position: left side of cell
                 tx = rect.x() + 4 + fm.horizontalAdvance(numeral) / 2
             ty = rect.y() + 2 + text_h / 2
 
-            p.drawText(text_rect,
-                       int(halign | Qt.AlignmentFlag.AlignTop),
-                       numeral)
+            p.drawText(text_rect, int(halign | Qt.AlignmentFlag.AlignTop), numeral)
             self._cusp_positions.append((numeral, tx, ty, tip))
 
     def _draw_planets_in_cells(self, p, x0, y0, cw, ch):
@@ -288,8 +320,12 @@ class SouthIndianRenderer(ChartRenderer):
 
             # Leave top strip for sign label
             label_h = min(cw, ch) * 0.22
-            avail_rect = QRectF(rect.x() + 2, rect.y() + label_h,
-                                rect.width() - 4, rect.height() - label_h - 2)
+            avail_rect = QRectF(
+                rect.x() + 2,
+                rect.y() + label_h,
+                rect.width() - 4,
+                rect.height() - label_h - 2,
+            )
 
             cols_per_row = max(1, int(avail_rect.width() / (glyph_size * 0.95)))
 
@@ -302,9 +338,13 @@ class SouthIndianRenderer(ChartRenderer):
                 if py + glyph_size / 2 > avail_rect.bottom():
                     break  # cell overflow — skip remaining
 
-                color = t["glyph_selected"] if pname == self.selected_planet \
-                    else t["glyph_retro"] if retro \
+                color = (
+                    t["glyph_selected"]
+                    if pname == self.selected_planet
+                    else t["glyph_retro"]
+                    if retro
                     else t["glyph"]
+                )
 
                 glyph_data = PLANET_GLYPHS.get(pname)
                 if glyph_data:
@@ -312,9 +352,16 @@ class SouthIndianRenderer(ChartRenderer):
                 else:
                     p.setPen(QPen(color, 1))
                     p.setFont(QFont("Sans", max(5, int(glyph_size * 0.5))))
-                    p.drawText(QRectF(px - glyph_size/2, py - glyph_size/2,
-                                      glyph_size, glyph_size),
-                               int(Qt.AlignmentFlag.AlignCenter), pname[:2])
+                    p.drawText(
+                        QRectF(
+                            px - glyph_size / 2,
+                            py - glyph_size / 2,
+                            glyph_size,
+                            glyph_size,
+                        ),
+                        int(Qt.AlignmentFlag.AlignCenter),
+                        pname[:2],
+                    )
 
                 self._planet_positions.append((pname, px, py, info))
 
@@ -337,7 +384,8 @@ class SouthIndianRenderer(ChartRenderer):
 
         d = int(r * 2)
         scaled = self._center_pixmap.scaled(
-            d, d,
+            d,
+            d,
             Qt.AspectRatioMode.KeepAspectRatioByExpanding,
             Qt.TransformationMode.SmoothTransformation,
         )
@@ -346,11 +394,13 @@ class SouthIndianRenderer(ChartRenderer):
         p.save()
         p.setClipPath(clip)
         p.drawPixmap(
-            int(cx - r), int(cy - r),
+            int(cx - r),
+            int(cy - r),
             scaled.copy(
                 (scaled.width() - d) // 2,
                 (scaled.height() - d) // 2,
-                d, d,
+                d,
+                d,
             ),
         )
         p.restore()
@@ -363,14 +413,14 @@ class SouthIndianRenderer(ChartRenderer):
     def _planet_at(self, pos):
         for name, px, py, info in self._planet_positions:
             dx, dy = pos.x() - px, pos.y() - py
-            if math.sqrt(dx*dx + dy*dy) < HIT_RADIUS:
+            if math.sqrt(dx * dx + dy * dy) < HIT_RADIUS:
                 return name, info
         return None
 
     def _cusp_at(self, pos):
         for label, px, py, tip in self._cusp_positions:
             dx, dy = pos.x() - px, pos.y() - py
-            if math.sqrt(dx*dx + dy*dy) < HIT_RADIUS:
+            if math.sqrt(dx * dx + dy * dy) < HIT_RADIUS:
                 return tip
         return None
 

@@ -2,10 +2,18 @@
 
 import math
 
-from PySide6.QtWidgets import QToolTip, QGraphicsSceneMouseEvent, QGraphicsSceneHoverEvent
+from PySide6.QtWidgets import (
+    QToolTip,
+    QGraphicsSceneMouseEvent,
+    QGraphicsSceneHoverEvent,
+)
 from PySide6.QtCore import Qt, QPointF, QRectF
 from PySide6.QtGui import (
-    QPen, QBrush, QFont, QPainterPath, QPixmap,
+    QPen,
+    QBrush,
+    QFont,
+    QPainterPath,
+    QPixmap,
     QFontMetricsF,
 )
 
@@ -13,7 +21,7 @@ from libaditya.objects.context import Circle
 from libaditya import constants as const
 
 from gandiva.glyphs import PLANET_GLYPHS, SIGN_GLYPHS
-from gandiva.glyph_renderer import draw_glyph
+from gandiva.glyph_renderer import draw_glyph, draw_aditya_glyph
 from gandiva.renderers.base import ChartRenderer
 from gandiva.assets import CENTER_IMAGE
 
@@ -24,46 +32,58 @@ def _fmt_lon(obj) -> str:
 
 
 ZODIAC_NAMES = [
-    "ARIES", "TAURUS", "GEMINI", "CANCER",
-    "LEO", "VIRGO", "LIBRA", "SCORPIO",
-    "SAGITTARIUS", "CAPRICORN", "AQUARIUS", "PISCES",
+    "ARIES",
+    "TAURUS",
+    "GEMINI",
+    "CANCER",
+    "LEO",
+    "VIRGO",
+    "LIBRA",
+    "SCORPIO",
+    "SAGITTARIUS",
+    "CAPRICORN",
+    "AQUARIUS",
+    "PISCES",
 ]
 
-ROMAN = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"]
+ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"]
 
 SKIP_PLANETS = {"Earth"}
 
 HIT_RADIUS = 18
 
 # Band widths as fractions of r_outer (outer → inner)
-FRAC_SIGN   = 0.12   # sign name band
-FRAC_PLANET = 0.445  # planet glyph band — expanded to fill space from shrinking inner region
-FRAC_HOUSE  = 0.10   # combined house + cusp band
+FRAC_SIGN = 0.12  # sign name band
+FRAC_PLANET = (
+    0.445  # planet glyph band — expanded to fill space from shrinking inner region
+)
+FRAC_HOUSE = 0.10  # combined house + cusp band
 # remaining ~0.335 × r = center (image)
 
 
 class WesternWheelRenderer(ChartRenderer):
-
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setAcceptHoverEvents(True)
-        self.asc_deg          = 0.0
-        self.wheel_ref_deg    = 15.0
-        self.is_aditya        = True
+        self.asc_deg = 0.0
+        self.wheel_ref_deg = 15.0
+        self.is_aditya = True
         self.planet_positions = []
-        self.selected_planet  = None
-        self._center_pixmap   = QPixmap(CENTER_IMAGE)
-        self.cusp_positions   = []
-        self._active_tip      = ""   # track current tooltip to avoid resetting on every hover move
+        self.selected_planet = None
+        self._center_pixmap = QPixmap(CENTER_IMAGE)
+        self.cusp_positions = []
+        self._active_tip = (
+            ""  # track current tooltip to avoid resetting on every hover move
+        )
 
     def set_theme(self, theme: dict) -> None:
         super().set_theme(theme)
         # clear_cache() is called by ChartScene.set_theme(), not here
 
     def update_from_chart(self, chart) -> None:
-        self.asc_deg   = chart.rashi().cusps()[1].ecliptic_longitude()
+        self.asc_deg = chart.rashi().cusps()[1].ecliptic_longitude()
         self.is_aditya = chart.context.circle == Circle.ADITYA
-        asc_sign_idx       = int(self.asc_deg / 30)
+        asc_sign_idx = int(self.asc_deg / 30)
         self.wheel_ref_deg = asc_sign_idx * 30.0 + 15.0
         self.selected_planet = None
         super().update_from_chart(chart)  # stores self._chart, calls self.update()
@@ -74,10 +94,10 @@ class WesternWheelRenderer(ChartRenderer):
         rect = self.boundingRect()
         side = min(rect.width(), rect.height())
         cx, cy = rect.center().x(), rect.center().y()
-        r        = side / 2 - 18
-        r_sign   = r       - r * FRAC_SIGN
-        r_planet = r_sign  - r * FRAC_PLANET
-        r_house  = r_planet - r * FRAC_HOUSE
+        r = side / 2 - 18
+        r_sign = r - r * FRAC_SIGN
+        r_planet = r_sign - r * FRAC_PLANET
+        r_house = r_planet - r * FRAC_HOUSE
         return cx, cy, r, r_sign, r_planet, r_house
 
     def _ecl_to_angle(self, ecl_deg):
@@ -105,14 +125,14 @@ class WesternWheelRenderer(ChartRenderer):
     def _planet_at(self, pos):
         for name, px, py, info in self.planet_positions:
             dx, dy = pos.x() - px, pos.y() - py
-            if math.sqrt(dx*dx + dy*dy) < HIT_RADIUS:
+            if math.sqrt(dx * dx + dy * dy) < HIT_RADIUS:
                 return name, info
         return None
 
     def _cusp_at(self, pos):
         for label, px, py, tip in self.cusp_positions:
             dx, dy = pos.x() - px, pos.y() - py
-            if math.sqrt(dx*dx + dy*dy) < HIT_RADIUS:
+            if math.sqrt(dx * dx + dy * dy) < HIT_RADIUS:
                 return tip
         return None
 
@@ -153,24 +173,34 @@ class WesternWheelRenderer(ChartRenderer):
 
     def _draw_sign_names(self, p, cx, cy, r, r_sign):
         band_w = r - r_sign
-        r_mid  = (r + r_sign) / 2
+        r_mid = (r + r_sign) / 2
 
         if self.is_aditya:
-            font_pt = max(5, int(band_w * 0.52))
-            font    = QFont("Sans", font_pt)
-            raw     = [n.upper() for n in const.adityas]
-            labels  = [raw[(i + 1) % 12] for i in range(12)]
-            p.setPen(QPen(self._theme["sign_label"]))
-            for i, label in enumerate(labels):
+            glyph_size = band_w * 1.1
+            for i in range(12):
                 mid_ecl = i * 30.0 + 15.0
-                self._draw_arc_text(p, cx, cy, r_mid, mid_ecl, label, font)
+                sx, sy = self._polar(cx, cy, r_mid, mid_ecl)
+                draw_aditya_glyph(
+                    p,
+                    (i + 1) % 12,
+                    sx,
+                    sy,
+                    size=glyph_size,
+                    color=self._theme["sign_label"],
+                )
         else:
             glyph_size = band_w * 2.89
             for i, glyph_data in enumerate(SIGN_GLYPHS):
-                mid_ecl  = i * 30.0 + 15.0
-                sx, sy   = self._polar(cx, cy, r_mid, mid_ecl)
-                draw_glyph(p, glyph_data, sx, sy, size=glyph_size,
-                           color=self._theme["sign_label"])
+                mid_ecl = i * 30.0 + 15.0
+                sx, sy = self._polar(cx, cy, r_mid, mid_ecl)
+                draw_glyph(
+                    p,
+                    glyph_data,
+                    sx,
+                    sy,
+                    size=glyph_size,
+                    color=self._theme["sign_label"],
+                )
 
     def _draw_arc_text(self, p, cx, cy, r_arc, ecl_center, text, font):
         """Draw text curved along the arc at radius r_arc, centered at ecl_center.
@@ -183,15 +213,15 @@ class WesternWheelRenderer(ChartRenderer):
         fm = QFontMetricsF(font)
         char_widths = [fm.horizontalAdvance(ch) for ch in text]
         total_w = sum(char_widths)
-        ch_h    = fm.height()
+        ch_h = fm.height()
 
         half_span_rad = total_w / (2.0 * r_arc)
-        a_center      = self._ecl_to_angle(ecl_center)
-        a_center_deg  = math.degrees(a_center) % 360
+        a_center = self._ecl_to_angle(ecl_center)
+        a_center_deg = math.degrees(a_center) % 360
         # Bottom half uses opposite traversal direction to compensate for the
         # 180° character flip that keeps text right-side-up.
         bottom = 180 < a_center_deg < 360
-        sign   = -1 if bottom else +1   # +1 = CW, -1 = CCW
+        sign = -1 if bottom else +1  # +1 = CW, -1 = CCW
 
         p.setFont(font)
         x_pos = 0.0
@@ -208,15 +238,18 @@ class WesternWheelRenderer(ChartRenderer):
             # the wrong side of the boundary and get a different flip, making them
             # appear rotated opposite to the rest of the label.
             a_deg = math.degrees(a_char) % 360
-            rot   = 90.0 - a_deg
+            rot = 90.0 - a_deg
             if bottom:
                 rot += 180.0
 
             p.save()
             p.translate(sx, sy)
             p.rotate(rot)
-            p.drawText(QRectF(-ch_w / 2, -ch_h / 2, ch_w, ch_h),
-                       Qt.AlignmentFlag.AlignCenter, ch)
+            p.drawText(
+                QRectF(-ch_w / 2, -ch_h / 2, ch_w, ch_h),
+                Qt.AlignmentFlag.AlignCenter,
+                ch,
+            )
             p.restore()
 
             x_pos += ch_w
@@ -224,10 +257,10 @@ class WesternWheelRenderer(ChartRenderer):
     # ── planets ───────────────────────────────────────────────────────────────
 
     def _draw_planets(self, p, cx, cy, r_sign, r_planet):
-        rashi      = self._chart.rashi()
-        planets    = rashi.planets()
-        band_w     = r_sign - r_planet
-        r_mid      = (r_sign + r_planet) / 2
+        rashi = self._chart.rashi()
+        planets = rashi.planets()
+        band_w = r_sign - r_planet
+        r_mid = (r_sign + r_planet) / 2
 
         skip_outer = not self._chart.context.print_outer_planets
 
@@ -238,9 +271,9 @@ class WesternWheelRenderer(ChartRenderer):
             if skip_outer and planet.is_outer_planet():
                 continue
             try:
-                ecl   = planet.ecliptic_longitude()
+                ecl = planet.ecliptic_longitude()
                 retro = planet.retrograde()
-                dig   = planet.dignity()
+                dig = planet.dignity()
                 try:
                     rise_str = f"Rise:       {planet.rise().usrtimedate()}"
                 except Exception:
@@ -259,18 +292,23 @@ class WesternWheelRenderer(ChartRenderer):
                             deity_str = f"Deity:      {deity}"
                     except Exception:
                         pass
-                info  = "\n".join(filter(None, [
-                    f"{name}" + ("  (R)" if retro else ""),
-                    f"Longitude:  {_fmt_lon(planet)}",
-                    f"Sign:       {planet.sign_name()}",
-                    f"Nakshatra:  {planet.nakshatra_name()}",
-                    amsha_str,
-                    deity_str,
-                    f"Dignity:    {dig}" if dig else "",
-                    f"Speed:      {planet.longitude_speed():.4f}°/day",
-                    rise_str,
-                    set_str,
-                ]))
+                info = "\n".join(
+                    filter(
+                        None,
+                        [
+                            f"{name}" + ("  (R)" if retro else ""),
+                            f"Longitude:  {_fmt_lon(planet)}",
+                            f"Sign:       {planet.sign_name()}",
+                            f"Nakshatra:  {planet.nakshatra_name()}",
+                            amsha_str,
+                            deity_str,
+                            f"Dignity:    {dig}" if dig else "",
+                            f"Speed:      {planet.longitude_speed():.4f}°/day",
+                            rise_str,
+                            set_str,
+                        ],
+                    )
+                )
                 raw.append((name, ecl, retro, info))
             except Exception:
                 continue
@@ -280,8 +318,8 @@ class WesternWheelRenderer(ChartRenderer):
             return
 
         glyph_size = band_w * 0.55
-        half       = glyph_size / 2
-        min_dist   = glyph_size * 0.95
+        half = glyph_size / 2
+        min_dist = glyph_size * 0.95
 
         # ── initial placement: true ecliptic longitude at r_mid ────────────────
         # Each entry: [x, y, name, retro, info, sign_idx, ecl_true]
@@ -299,7 +337,7 @@ class WesternWheelRenderer(ChartRenderer):
         # Push overlapping glyphs apart; clamp radially (stay in band) and
         # angularly (stay in the planet's own sign sector).
         r_min = r_planet + half + 4
-        r_max = r_sign   - half - 4
+        r_max = r_sign - half - 4
 
         for iteration in range(200):
             moved = False
@@ -338,18 +376,24 @@ class WesternWheelRenderer(ChartRenderer):
                 # Angular: soft spring toward true ecliptic position so isolated
                 # planets snap back precisely, plus a ±15° hard outer limit so
                 # no planet can drift more than half a sign from its true pos.
-                screen_angle = math.degrees(math.atan2(-(item[1] - cy), item[0] - cx)) % 360
-                ecl_deg  = self._angle_to_ecl(screen_angle)
+                screen_angle = (
+                    math.degrees(math.atan2(-(item[1] - cy), item[0] - cx)) % 360
+                )
+                ecl_deg = self._angle_to_ecl(screen_angle)
                 ecl_true = item[6]
                 drift = ecl_deg - ecl_true
-                if drift >  180: drift -= 360
-                if drift < -180: drift += 360
-                ecl_spring  = ecl_deg - drift * 0.008
-                sign_idx_i  = item[5]
-                sign_lo     = sign_idx_i * 30.0
-                sign_hi     = sign_lo + 30.0
-                margin_deg  = half / (2 * math.pi * ((r_min + r_max) / 2)) * 360
-                ecl_clamped = max(sign_lo + margin_deg, min(sign_hi - margin_deg, ecl_spring))
+                if drift > 180:
+                    drift -= 360
+                if drift < -180:
+                    drift += 360
+                ecl_spring = ecl_deg - drift * 0.008
+                sign_idx_i = item[5]
+                sign_lo = sign_idx_i * 30.0
+                sign_hi = sign_lo + 30.0
+                margin_deg = half / (2 * math.pi * ((r_min + r_max) / 2)) * 360
+                ecl_clamped = max(
+                    sign_lo + margin_deg, min(sign_hi - margin_deg, ecl_spring)
+                )
 
                 # Convert back to screen position
                 a = self._ecl_to_angle(ecl_clamped)
@@ -362,67 +406,82 @@ class WesternWheelRenderer(ChartRenderer):
         # ── draw glyphs ───────────────────────────────────────────────────────
         self.planet_positions = []
         for x, y, name, retro, info, _sign, _ecl in items:
-            color  = self._theme["glyph_selected"] if name == self.selected_planet \
-                     else self._theme["glyph_retro"] if retro \
-                     else self._theme["glyph"]
+            color = (
+                self._theme["glyph_selected"]
+                if name == self.selected_planet
+                else self._theme["glyph_retro"]
+                if retro
+                else self._theme["glyph"]
+            )
             glyph_data = PLANET_GLYPHS.get(name)
             if glyph_data:
                 draw_glyph(p, glyph_data, x, y, size=glyph_size, color=color)
             else:
                 p.setPen(QPen(color, 1))
                 p.setFont(QFont("Sans", max(6, int(glyph_size * 0.6))))
-                p.drawText(QRectF(x - half, y - half, glyph_size, glyph_size),
-                           Qt.AlignmentFlag.AlignCenter, name[:2])
+                p.drawText(
+                    QRectF(x - half, y - half, glyph_size, glyph_size),
+                    Qt.AlignmentFlag.AlignCenter,
+                    name[:2],
+                )
             self.planet_positions.append((name, x, y, info))
 
     # ── combined house + cusp ring ─────────────────────────────────────────────
 
     def _draw_house_ring(self, p, cx, cy, r_planet, r_house):
-        cusps   = self._chart.rashi().cusps()
-        band_w  = r_planet - r_house
+        cusps = self._chart.rashi().cusps()
+        band_w = r_planet - r_house
 
         # Cusp numerals in outer third, house numbers in inner third — no radial overlap
-        r_cusp_row  = r_house + band_w * 0.72
+        r_cusp_row = r_house + band_w * 0.72
         r_house_row = r_house + band_w * 0.28
 
         # House numbers: centered in each whole-sign sector, inner row
         font_pt_h = max(4, int(band_w * 0.39))
-        font_h    = QFont("Sans", font_pt_h)
-        box_h     = font_pt_h * 1.6
-        asc_sign  = int(self.asc_deg / 30)
+        font_h = QFont("Sans", font_pt_h)
+        box_h = font_pt_h * 1.6
+        asc_sign = int(self.asc_deg / 30)
 
         p.setFont(font_h)
         p.setPen(QPen(self._theme["house_label"]))
         for house in range(1, 13):
             sign_idx = (asc_sign + house - 1) % 12
-            mid_ecl  = sign_idx * 30.0 + 15.0
-            lx, ly   = self._polar(cx, cy, r_house_row, mid_ecl)
-            p.drawText(QRectF(lx - box_h/2, ly - box_h/2, box_h, box_h),
-                       Qt.AlignmentFlag.AlignCenter, str(house))
+            mid_ecl = sign_idx * 30.0 + 15.0
+            lx, ly = self._polar(cx, cy, r_house_row, mid_ecl)
+            p.drawText(
+                QRectF(lx - box_h / 2, ly - box_h / 2, box_h, box_h),
+                Qt.AlignmentFlag.AlignCenter,
+                str(house),
+            )
 
         # Cusp numerals: half size of house, at actual cusp ecliptic degree, outer row
         font_pt_c = max(3, int(font_pt_h * 0.75))
-        font_c    = QFont("Sans", font_pt_c)
-        box_c     = font_pt_c * 1.4
+        font_c = QFont("Sans", font_pt_c)
+        box_c = font_pt_c * 1.4
 
         p.setFont(font_c)
         for i in range(1, 13):
-            cusp   = cusps[i]
-            ecl    = cusp.ecliptic_longitude()
+            cusp = cusps[i]
+            ecl = cusp.ecliptic_longitude()
             lx, ly = self._polar(cx, cy, r_cusp_row, ecl)
             weight = 1.6 if i in (1, 4, 7, 10) else 1.0
             p.setPen(QPen(self._theme["cusp_label"], weight))
-            p.drawText(QRectF(lx - box_c/2, ly - box_c/2, box_c, box_c),
-                       Qt.AlignmentFlag.AlignCenter, ROMAN[i - 1])
+            p.drawText(
+                QRectF(lx - box_c / 2, ly - box_c / 2, box_c, box_c),
+                Qt.AlignmentFlag.AlignCenter,
+                ROMAN[i - 1],
+            )
             try:
-                tip = "\n".join([
-                    f"Cusp {ROMAN[i-1]}  (House {i})",
-                    f"Longitude:  {_fmt_lon(cusp)}",
-                    f"Sign:       {cusp.sign_name()}",
-                    f"Nakshatra:  {cusp.nakshatra_name()}",
-                ])
+                tip = "\n".join(
+                    [
+                        f"Cusp {ROMAN[i - 1]}  (House {i})",
+                        f"Longitude:  {_fmt_lon(cusp)}",
+                        f"Sign:       {cusp.sign_name()}",
+                        f"Nakshatra:  {cusp.nakshatra_name()}",
+                    ]
+                )
             except Exception:
-                tip = f"Cusp {ROMAN[i-1]}"
+                tip = f"Cusp {ROMAN[i - 1]}"
             self.cusp_positions.append((ROMAN[i - 1], lx, ly, tip))
 
     # ── center image ──────────────────────────────────────────────────────────
@@ -432,7 +491,8 @@ class WesternWheelRenderer(ChartRenderer):
             return
         d = int(r_house * 2)
         scaled = self._center_pixmap.scaled(
-            d, d,
+            d,
+            d,
             Qt.AspectRatioMode.KeepAspectRatioByExpanding,
             Qt.TransformationMode.SmoothTransformation,
         )
@@ -441,11 +501,13 @@ class WesternWheelRenderer(ChartRenderer):
         p.save()
         p.setClipPath(clip)
         p.drawPixmap(
-            int(cx - r_house), int(cy - r_house),
+            int(cx - r_house),
+            int(cy - r_house),
             scaled.copy(
-                (scaled.width()  - d) // 2,
+                (scaled.width() - d) // 2,
                 (scaled.height() - d) // 2,
-                d, d,
+                d,
+                d,
             ),
         )
         p.restore()
@@ -465,7 +527,7 @@ class WesternWheelRenderer(ChartRenderer):
 
     def hoverMoveEvent(self, event: QGraphicsSceneHoverEvent):
         planet_hit = self._planet_at(event.pos())
-        cusp_tip   = self._cusp_at(event.pos())
+        cusp_tip = self._cusp_at(event.pos())
         if planet_hit:
             self.setCursor(Qt.CursorShape.PointingHandCursor)
             self.setToolTip(planet_hit[1])

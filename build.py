@@ -9,8 +9,13 @@ import sys
 
 def main():
     parser = argparse.ArgumentParser(description="Build gandiva with Nuitka")
-    parser.add_argument("-j", "--jobs", type=int, default=None,
-                        help="Number of parallel compilation jobs (default: all cores)")
+    parser.add_argument(
+        "-j",
+        "--jobs",
+        type=int,
+        default=None,
+        help="Number of parallel compilation jobs (default: all cores)",
+    )
     args = parser.parse_args()
 
     # Ensure nuitka is installed
@@ -19,7 +24,9 @@ def main():
     )
 
     cmd = [
-        sys.executable, "-m", "nuitka",
+        sys.executable,
+        "-m",
+        "nuitka",
         "--standalone",
         "--output-dir=build",
         "--enable-plugin=pyside6",
@@ -27,6 +34,7 @@ def main():
         "--include-package=libaditya",
         "--include-package-data=libaditya",
         "--include-package-data=gandiva",
+        "--include-data-dir=assets=assets",
         "--follow-imports",
         "--nofollow-import-to=tkinter",
         "--nofollow-import-to=unittest",
