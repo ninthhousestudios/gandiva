@@ -1,12 +1,12 @@
 """Jaimini tab panel — displays Jaimini astrology data for the current chart."""
 
-from PyQt6.QtCore import Qt, QRectF
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import Qt, QRectF
+from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QScrollArea, QLabel,
     QTableWidget, QTableWidgetItem, QHeaderView, QTreeWidget,
     QTreeWidgetItem, QSizePolicy, QPushButton, QComboBox,
 )
-from PyQt6.QtGui import QFont, QPainter, QPen, QColor
+from PySide6.QtGui import QFont, QPainter, QPen, QColor
 
 from gandiva.themes import get_theme, DEFAULT_THEME
 
@@ -297,7 +297,7 @@ class JaiminiPanel(QWidget):
         if chart is None:
             return
         # Sync theme for painted widgets
-        from PyQt6.QtCore import QSettings
+        from PySide6.QtCore import QSettings
         theme_name = QSettings("gandiva", "gandiva").value("theme", DEFAULT_THEME)
         self._pada_grid.set_theme(get_theme(theme_name))
         try:

@@ -1,8 +1,8 @@
 """QGraphicsScene subclass that manages chart renderer, overlays, and info widgets."""
 
-from PyQt6.QtCore import QRectF, pyqtSignal
-from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import QGraphicsScene
+from PySide6.QtCore import QRectF, Signal
+from PySide6.QtGui import QColor
+from PySide6.QtWidgets import QGraphicsScene
 
 from gandiva.glyph_renderer import clear_cache
 from gandiva.info_widgets import INFO_WIDGETS
@@ -15,10 +15,10 @@ from gandiva.themes import get_theme, DEFAULT_THEME
 class ChartScene(QGraphicsScene):
     """Manages the layered scene: background, chart renderer, overlays, info widgets."""
 
-    overlay_added = pyqtSignal(str)
-    overlay_removed = pyqtSignal(str)
-    widget_added = pyqtSignal(str)
-    widget_removed = pyqtSignal(str)
+    overlay_added = Signal(str)
+    overlay_removed = Signal(str)
+    widget_added = Signal(str)
+    widget_removed = Signal(str)
 
     # Z-value constants
     Z_CHART = 10

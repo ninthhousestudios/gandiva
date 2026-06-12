@@ -7,8 +7,8 @@ of the wheel at the inner edge of the house ring.
 
 import math
 
-from PyQt6.QtCore import Qt, QPointF
-from PyQt6.QtGui import QPen, QColor
+from PySide6.QtCore import Qt, QPointF
+from PySide6.QtGui import QPen, QColor
 
 from gandiva.overlays.base import ChartOverlay
 

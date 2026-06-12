@@ -1,7 +1,7 @@
 """Abstract base class for chart overlays."""
 
-from PyQt6.QtCore import QRectF
-from PyQt6.QtWidgets import QGraphicsObject
+from PySide6.QtCore import QRectF
+from PySide6.QtWidgets import QGraphicsObject
 
 
 class ChartOverlay(QGraphicsObject):

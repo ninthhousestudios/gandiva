@@ -5,8 +5,8 @@ Draws arrows between sign cells that have active rashi (Jaimini) aspects.
 
 import math
 
-from PyQt6.QtCore import Qt, QPointF
-from PyQt6.QtGui import QPen, QColor, QPolygonF
+from PySide6.QtCore import Qt, QPointF
+from PySide6.QtGui import QPen, QColor, QPolygonF
 
 from libaditya import constants as const
 

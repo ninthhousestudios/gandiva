@@ -1,6 +1,6 @@
 """Panchanga info widget — displays tithi, nakshatra, yoga, karana, vara."""
 
-from PyQt6.QtWidgets import QWidget, QFormLayout, QLabel
+from PySide6.QtWidgets import QWidget, QFormLayout, QLabel
 
 from gandiva.info_widgets.base import InfoWidget
 

@@ -1,9 +1,9 @@
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QTreeWidget, QTreeWidgetItem,
     QLabel, QPushButton, QSpinBox,
 )
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QPixmap, QPainter
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QPixmap, QPainter
 
 from gandiva.widgets.chart_panel import varga_display_name
 
@@ -19,9 +19,9 @@ _VARGA_CODES = [
 class VargaActionWidget(QWidget):
     """Row of action buttons + optional mini chart for a varga."""
 
-    pop_out = pyqtSignal(int)
-    make_main = pyqtSignal(int)
-    side_by_side = pyqtSignal(int)
+    pop_out = Signal(int)
+    make_main = Signal(int)
+    side_by_side = Signal(int)
 
     def __init__(self, varga_code: int, parent=None):
         super().__init__(parent)
@@ -79,7 +79,7 @@ class VargaActionWidget(QWidget):
 
         from gandiva.scene.chart_scene import ChartScene
         from gandiva.widgets.chart_panel import _VargaAsChart
-        from PyQt6.QtCore import QRectF
+        from PySide6.QtCore import QRectF
 
         scene = ChartScene()
         scene.set_chart_style(style_name)
@@ -102,9 +102,9 @@ class VargaActionWidget(QWidget):
 class VargasWidget(QWidget):
     """Vargas dock — collapsible tree of all divisional charts."""
 
-    varga_pop_out = pyqtSignal(int)
-    varga_make_main = pyqtSignal(int)
-    varga_side_by_side = pyqtSignal(int)
+    varga_pop_out = Signal(int)
+    varga_make_main = Signal(int)
+    varga_side_by_side = Signal(int)
 
     def __init__(self, parent=None):
         super().__init__(parent)

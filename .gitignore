@@ -6,3 +6,8 @@ build/
 
 # AgentOps session artifacts
 .agents/
+
+.DS_Store
+.python-version
+cmd.md
+nuitka-crash-report.xml

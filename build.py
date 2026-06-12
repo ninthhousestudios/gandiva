@@ -22,7 +22,7 @@ def main():
         sys.executable, "-m", "nuitka",
         "--standalone",
         "--output-dir=build",
-        "--enable-plugin=pyqt6",
+        "--enable-plugin=pyside6",
         "--include-qt-plugins=sensible",
         "--include-package=libaditya",
         "--include-package-data=libaditya",
@@ -41,6 +41,7 @@ def main():
     if platform.system() == "Darwin":
         cmd.append("--macos-create-app-bundle")
         cmd.append("--macos-app-name=Gandiva")
+        cmd.append("--macos-app-icon=gandiva/assets/gandiva-icon.icns")
 
     if platform.system() == "Windows":
         cmd.append("--windows-console-mode=disable")

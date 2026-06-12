@@ -7,12 +7,12 @@ across the bottom row right-to-left, and up the left column.
 
 import math
 
-from PyQt6.QtCore import Qt, QPointF, QRectF
-from PyQt6.QtGui import (
+from PySide6.QtCore import Qt, QPointF, QRectF
+from PySide6.QtGui import (
     QPen, QBrush, QFont, QFontMetricsF,
     QPixmap, QPainterPath,
 )
-from PyQt6.QtWidgets import QToolTip, QGraphicsSceneHoverEvent
+from PySide6.QtWidgets import QToolTip, QGraphicsSceneHoverEvent
 
 from libaditya.objects.context import Circle
 from libaditya import constants as const

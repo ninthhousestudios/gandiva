@@ -1,7 +1,7 @@
 """Abstract base class for chart renderers."""
 
-from PyQt6.QtCore import QRectF, pyqtSignal
-from PyQt6.QtWidgets import QGraphicsObject
+from PySide6.QtCore import QRectF, Signal
+from PySide6.QtWidgets import QGraphicsObject
 
 
 class ChartRenderer(QGraphicsObject):
@@ -12,7 +12,7 @@ class ChartRenderer(QGraphicsObject):
         - update_from_chart(chart)
     """
 
-    planet_selected = pyqtSignal(str)  # planet name, or "" for deselection
+    planet_selected = Signal(str)  # planet name, or "" for deselection
 
     def __init__(self, parent=None):
         super().__init__(parent)

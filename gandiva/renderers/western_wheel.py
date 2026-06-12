@@ -2,9 +2,9 @@
 
 import math
 
-from PyQt6.QtWidgets import QToolTip, QGraphicsSceneMouseEvent, QGraphicsSceneHoverEvent
-from PyQt6.QtCore import Qt, QPointF, QRectF
-from PyQt6.QtGui import (
+from PySide6.QtWidgets import QToolTip, QGraphicsSceneMouseEvent, QGraphicsSceneHoverEvent
+from PySide6.QtCore import Qt, QPointF, QRectF
+from PySide6.QtGui import (
     QPen, QBrush, QFont, QPainterPath, QPixmap,
     QFontMetricsF,
 )

@@ -1,8 +1,8 @@
 """Base class for draggable, resizable info widgets in the chart scene."""
 
-from PyQt6.QtCore import Qt, pyqtSignal, QObject, QPointF, QEvent, QRectF
-from PyQt6.QtGui import QFont, QPen, QColor
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import Qt, Signal, QObject, QPointF, QEvent, QRectF
+from PySide6.QtGui import QFont, QPen, QColor
+from PySide6.QtWidgets import (
     QGraphicsProxyWidget,
     QGraphicsItem,
     QWidget,
@@ -84,7 +84,7 @@ class InfoWidget(QGraphicsProxyWidget):
         - update_from_chart(chart)
     """
 
-    closed = pyqtSignal(str)  # emits widget_id when X clicked
+    closed = Signal(str)  # emits widget_id when X clicked
 
     def __init__(self, widget_id: str, title: str, parent=None):
         super().__init__(parent)

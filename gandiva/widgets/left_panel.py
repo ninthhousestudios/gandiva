@@ -1,6 +1,6 @@
 """Left panel with chart config tabs, overlay and widget toggle checkboxes."""
 
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
@@ -20,12 +20,12 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QMessageBox,
 )
-from PyQt6.QtCore import (
+from PySide6.QtCore import (
     Qt,
     QPropertyAnimation,
     QEasingCurve,
-    pyqtProperty,
-    pyqtSignal,
+    Property,
+    Signal,
     QDateTime,
     QDate,
     QTime,
@@ -63,13 +63,13 @@ _TAB_TO_PAGE = {
 class LeftPanel(QWidget):
     """Collapsible left panel for chart config, overlays and info widgets."""
 
-    overlay_toggled = pyqtSignal(str, bool)
-    spawn_widget = pyqtSignal(str)  # Emitted when user wants to spawn a widget (type)
-    chart_created = pyqtSignal(object)  # Emitted with Chart after calculation
-    theme_changed = pyqtSignal(str)  # Emitted when theme is changed
-    chart_style_changed = pyqtSignal(str)  # Emitted when chart style changes
-    display_options_changed = pyqtSignal()  # Emitted when display options change
-    rashi_aspect_mode_changed = pyqtSignal(str)  # Emitted when rashi aspect combo changes
+    overlay_toggled = Signal(str, bool)
+    spawn_widget = Signal(str)  # Emitted when user wants to spawn a widget (type)
+    chart_created = Signal(object)  # Emitted with Chart after calculation
+    theme_changed = Signal(str)  # Emitted when theme is changed
+    chart_style_changed = Signal(str)  # Emitted when chart style changes
+    display_options_changed = Signal()  # Emitted when display options change
+    rashi_aspect_mode_changed = Signal(str)  # Emitted when rashi aspect combo changes
 
     def _get_panel_width(self):
         return self.width()
@@ -82,7 +82,7 @@ class LeftPanel(QWidget):
             if len(sizes) >= 3:
                 self.splitter.setSizes([w, total - w - sizes[2], sizes[2]])
 
-    panel_width = pyqtProperty(int, _get_panel_width, _set_panel_width)
+    panel_width = Property(int, _get_panel_width, _set_panel_width)
 
     def __init__(self, parent=None):
         super().__init__(parent)

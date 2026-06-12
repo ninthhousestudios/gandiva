@@ -1,6 +1,6 @@
 import sys
 import os
-from PyQt6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication
 from gandiva.main_window import MainWindow
 from gandiva.themes import get_theme, DEFAULT_THEME, make_app_stylesheet
 

@@ -7,7 +7,7 @@ Use get_theme() to retrieve one by name, or THEMES for the full registry.
 To add a new theme: define a dict following the same keys, add it to THEMES.
 """
 
-from PyQt6.QtGui import QColor
+from PySide6.QtGui import QColor
 
 
 def _c(r, g, b):

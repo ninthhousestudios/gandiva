@@ -1,7 +1,7 @@
 """Nakshatra Dasha info widget — displays Vimshottari dasha periods."""
 
 from datetime import datetime, timedelta
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
@@ -11,8 +11,8 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QMenu,
 )
-from PyQt6.QtCore import Qt, QPoint
-from PyQt6.QtGui import QColor, QBrush
+from PySide6.QtCore import Qt, QPoint
+from PySide6.QtGui import QColor, QBrush
 
 from gandiva.info_widgets.base import InfoWidget
 

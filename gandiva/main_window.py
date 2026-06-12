@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
     QVBoxLayout,
@@ -8,8 +8,8 @@ from PyQt6.QtWidgets import (
     QToolButton,
     QLabel,
 )
-from PyQt6.QtCore import Qt, QSettings
-from PyQt6.QtGui import QShortcut, QKeySequence
+from PySide6.QtCore import Qt, QSettings
+from PySide6.QtGui import QShortcut, QKeySequence
 
 from gandiva.widgets.left_panel import LeftPanel
 from gandiva.widgets.chart_area import ChartArea

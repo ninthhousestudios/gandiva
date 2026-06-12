@@ -1,7 +1,7 @@
 """Jaimini Indicators tab — displays Gets spec results for the current chart."""
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QScrollArea, QTreeWidget, QTreeWidgetItem,
     QPushButton, QComboBox, QLabel,
 )

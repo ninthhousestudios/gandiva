@@ -1,11 +1,11 @@
 """Mini varga info widget — displays a divisional chart with varga selector."""
 
-from PyQt6.QtCore import Qt, QRectF
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import Qt, QRectF
+from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QLabel,
     QGraphicsScene, QGraphicsView,
 )
-from PyQt6.QtGui import QColor
+from PySide6.QtGui import QColor
 
 from gandiva.info_widgets.base import InfoWidget
 from gandiva.renderers import CHART_STYLES

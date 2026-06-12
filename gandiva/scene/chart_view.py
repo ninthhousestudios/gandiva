@@ -1,8 +1,8 @@
 """QGraphicsView subclass that hosts the ChartScene."""
 
-from PyQt6.QtCore import Qt, QRectF, QPointF
-from PyQt6.QtGui import QPainter, QWheelEvent
-from PyQt6.QtWidgets import QGraphicsView, QGraphicsProxyWidget, QFrame, QApplication
+from PySide6.QtCore import Qt, QRectF, QPointF
+from PySide6.QtGui import QPainter, QWheelEvent
+from PySide6.QtWidgets import QGraphicsView, QGraphicsProxyWidget, QFrame, QApplication
 
 from gandiva.scene.chart_scene import ChartScene
 

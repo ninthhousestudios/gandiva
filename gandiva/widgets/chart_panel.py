@@ -1,7 +1,7 @@
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame,
 )
-from PyQt6.QtCore import Qt, pyqtSignal
+from PySide6.QtCore import Qt, Signal
 
 from gandiva.scene.chart_scene import ChartScene
 from gandiva.scene.chart_view import ChartView
@@ -139,8 +139,8 @@ class ChartPanel(QWidget):
     Emits `clicked` when the user clicks anywhere on the panel.
     """
 
-    clicked = pyqtSignal()
-    close_requested = pyqtSignal()
+    clicked = Signal()
+    close_requested = Signal()
 
     def __init__(self, show_header: bool = False, parent=None):
         super().__init__(parent)

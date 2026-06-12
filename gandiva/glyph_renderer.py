@@ -8,9 +8,9 @@ Usage:
     draw_glyph(painter, PLANET_GLYPHS["Sun"], cx, cy, size=20, color=QColor(...))
 """
 
-from PyQt6.QtCore import QRectF, QByteArray
-from PyQt6.QtGui import QPainter, QColor
-from PyQt6.QtSvg import QSvgRenderer
+from PySide6.QtCore import QRectF, QByteArray
+from PySide6.QtGui import QPainter, QColor
+from PySide6.QtSvg import QSvgRenderer
 
 
 _SVG_COMMANDS = set("MmZzLlHhVvCcSsQqTtAa")

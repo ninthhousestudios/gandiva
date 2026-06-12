@@ -1,9 +1,9 @@
 """ChartArea — nested QMainWindow hosting ChartPanel(s) in a splitter + data docks."""
 
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QMainWindow, QDockWidget, QWidget, QVBoxLayout, QSplitter, QTabBar,
 )
-from PyQt6.QtCore import Qt, pyqtSignal
+from PySide6.QtCore import Qt, Signal
 
 from gandiva.widgets.chart_panel import ChartPanel, varga_display_name
 from gandiva.widgets.data_panels import DATA_PANELS
@@ -22,7 +22,7 @@ class ChartArea(QMainWindow):
     Dock widgets: data panels (Planets, Cusps, Nakshatras, Dashas, Kala, Panchanga)
     """
 
-    varga_tab_changed = pyqtSignal()
+    varga_tab_changed = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)

@@ -1,11 +1,11 @@
 """Dignity info widget — displays dignity, baladi, jagradadi, and sign lord for each planet."""
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView,
     QComboBox, QHBoxLayout, QLabel,
 )
-from PyQt6.QtGui import QFont
+from PySide6.QtGui import QFont
 
 from gandiva.info_widgets.base import InfoWidget
 

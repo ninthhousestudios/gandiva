@@ -5,7 +5,7 @@ Each widget has:
 - adjust_font(delta) — font size control (delta=0 resets)
 """
 
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QWidget,
     QMainWindow,
     QDockWidget,
@@ -32,8 +32,8 @@ from PyQt6.QtWidgets import (
     QDialogButtonBox,
     QMenu,
 )
-from PyQt6.QtCore import Qt, QPoint, QSettings, pyqtSignal
-from PyQt6.QtGui import QColor, QBrush, QFont, QFontDatabase
+from PySide6.QtCore import Qt, QPoint, QSettings, Signal
+from PySide6.QtGui import QColor, QBrush, QFont, QFontDatabase
 
 from libaditya import constants as const
 from libaditya.read import read_chtk_location
@@ -162,7 +162,7 @@ def _monospace_font():
 class PlanetPanel(QWidget):
     """Individual planet panel with title bar and tree. Tree stays put."""
 
-    pop_out_requested = pyqtSignal(str)  # planet_name
+    pop_out_requested = Signal(str)  # planet_name
 
     def __init__(self, planet_name: str, parent=None):
         super().__init__(parent)
@@ -225,7 +225,7 @@ class PlanetPanel(QWidget):
 class FloatingPlanetDock(QDockWidget):
     """Floating dock for a popped-out planet panel."""
 
-    docked = pyqtSignal(str)  # planet_name
+    docked = Signal(str)  # planet_name
 
     def __init__(self, planet_name: str, parent=None):
         super().__init__(planet_name, parent)
