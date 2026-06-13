@@ -81,6 +81,7 @@ class SouthIndianRenderer(ChartRenderer):
         self.selected_planet = None
         self._planet_positions = []  # [(name, x, y, info_str)]
         self._cusp_positions = []  # [(label, x, y, tip)] filled during paint
+        self._sign_positions = []  # [(x, y, name)] filled during paint
         self._sign_data = {}  # sign_num → [(name, retro, dignity, info_str)]
         self._cusp_in_sign = {}  # sign_num → cusp_number (1-12)
         self._center_pixmap = QPixmap(CENTER_IMAGE)
@@ -235,6 +236,7 @@ class SouthIndianRenderer(ChartRenderer):
         """Draw sign labels in each cell — glyphs for tropical/sidereal, text for aditya."""
         t = self._theme
 
+        self._sign_positions = []
         if self.is_aditya:
             glyph_size = min(cw, ch) * 0.19
             margin = glyph_size * 0.55
@@ -245,14 +247,16 @@ class SouthIndianRenderer(ChartRenderer):
                 else:
                     gx = rect.right() - margin
                 gy = rect.y() + margin
+                idx = (sign_num - 1) % 12
                 draw_aditya_glyph(
                     p,
-                    (sign_num - 1) % 12,
+                    idx,
                     gx,
                     gy,
                     size=glyph_size,
                     color=t["sign_label"],
                 )
+                self._sign_positions.append((gx, gy, const.adityas[idx]))
         else:
             # Tropical/sidereal: sign glyphs
             glyph_size = min(cw, ch) * 0.50
@@ -424,6 +428,13 @@ class SouthIndianRenderer(ChartRenderer):
                 return tip
         return None
 
+    def _sign_at(self, pos):
+        for gx, gy, name in self._sign_positions:
+            dx, dy = pos.x() - gx, pos.y() - gy
+            if math.sqrt(dx * dx + dy * dy) < HIT_RADIUS:
+                return name
+        return None
+
     def mousePressEvent(self, event):
         hit = self._planet_at(event.pos())
         name = hit[0] if hit else None
@@ -443,6 +454,9 @@ class SouthIndianRenderer(ChartRenderer):
             self.setCursor(Qt.CursorShape.PointingHandCursor)
             self.setToolTip(cusp_tip)
             QToolTip.showText(event.screenPos(), cusp_tip)
+        elif sign_tip := self._sign_at(event.pos()):
+            self.setToolTip(sign_tip)
+            QToolTip.showText(event.screenPos(), sign_tip)
         else:
             self.setCursor(Qt.CursorShape.ArrowCursor)
             self.setToolTip("")

@@ -72,6 +72,7 @@ class WesternWheelRenderer(ChartRenderer):
         self.selected_planet = None
         self._center_pixmap = QPixmap(CENTER_IMAGE)
         self.cusp_positions = []
+        self._sign_positions = []
         self._active_tip = (
             ""  # track current tooltip to avoid resetting on every hover move
         )
@@ -136,6 +137,13 @@ class WesternWheelRenderer(ChartRenderer):
                 return tip
         return None
 
+    def _sign_at(self, pos):
+        for gx, gy, name in self._sign_positions:
+            dx, dy = pos.x() - gx, pos.y() - gy
+            if math.sqrt(dx * dx + dy * dy) < HIT_RADIUS:
+                return name
+        return None
+
     # ── paint ─────────────────────────────────────────────────────────────────
 
     def paint(self, painter, option, widget=None):
@@ -175,19 +183,22 @@ class WesternWheelRenderer(ChartRenderer):
         band_w = r - r_sign
         r_mid = (r + r_sign) / 2
 
+        self._sign_positions = []
         if self.is_aditya:
             glyph_size = band_w * 1.1
             for i in range(12):
                 mid_ecl = i * 30.0 + 15.0
                 sx, sy = self._polar(cx, cy, r_mid, mid_ecl)
+                idx = (i + 1) % 12
                 draw_aditya_glyph(
                     p,
-                    (i + 1) % 12,
+                    idx,
                     sx,
                     sy,
                     size=glyph_size,
                     color=self._theme["sign_label"],
                 )
+                self._sign_positions.append((sx, sy, const.adityas[idx]))
         else:
             glyph_size = band_w * 2.89
             for i, glyph_data in enumerate(SIGN_GLYPHS):
@@ -541,6 +552,11 @@ class WesternWheelRenderer(ChartRenderer):
             if cusp_tip != self._active_tip:
                 self._active_tip = cusp_tip
                 QToolTip.showText(event.screenPos(), cusp_tip)
+        elif sign_tip := self._sign_at(event.pos()):
+            self.setToolTip(sign_tip)
+            if sign_tip != self._active_tip:
+                self._active_tip = sign_tip
+                QToolTip.showText(event.screenPos(), sign_tip)
         else:
             self.setCursor(Qt.CursorShape.ArrowCursor)
             self.setToolTip("")
